@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bruno — Menu</title>
+  <link rel="icon" href="favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #F5F2EC;
+      --green: #3D5A38;
+      --green-light: rgba(61,90,56,0.12);
+      --green-muted: rgba(61,90,56,0.5);
+      --green-faint: rgba(61,90,56,0.08);
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      background: var(--cream);
+      color: var(--green);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 44px 24px 28px;
+      gap: 10px;
+    }
+    header img.logo {
+      width: 150px;
+      height: 150px;
+      object-fit: contain;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--green-muted);
+    }
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: rgba(61,90,56,0.25);
+      margin: 2px auto 0;
+    }
+
+    /* ── HOURS ── */
+    .hours {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      padding: 0 24px 36px;
+    }
+    .hours-block {
+      text-align: center;
+    }
+    .hours-block .days {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 500;
+      color: var(--green);
+    }
+    .hours-block .time {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--green-muted);
+      margin-top: 3px;
+    }
+    .hours-sep {
+      width: 1px;
+      background: rgba(61,90,56,0.2);
+      align-self: stretch;
+    }
+
+    /* ── SECTION ── */
+    section {
+      padding: 0 16px 48px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 11px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--green-muted);
+      text-align: center;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .section-title::before,
+    .section-title::after {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 1px;
+      background: rgba(61,90,56,0.25);
+      vertical-align: middle;
+      margin: 0 10px;
+    }
+
+    /* ── GRID ── */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* ── ITEM CARD ── */
+    .card {
+      background: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      object-fit: contain;
+      display: block;
+      background: #fff;
+      padding: 10px;
+      border: 1.5px solid rgba(61,90,56,0.45);
+      border-radius: 6px;
+    }
+    .card-body {
+      padding: 12px 12px 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .card-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(13px, 3.5vw, 15px);
+      font-weight: 600;
+      color: var(--green);
+      line-height: 1.25;
+    }
+    .card-price {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(11px, 3vw, 13px);
+      font-weight: 500;
+      color: var(--green);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .card-desc {
+      font-size: clamp(10px, 2.5vw, 11px);
+      color: var(--green-muted);
+      line-height: 1.55;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── DRINKS ── */
+    .drinks-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid rgba(61,90,56,0.15);
+      border-radius: 6px;
+      overflow: hidden;
+      max-width: 400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .drink-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(61,90,56,0.1);
+    }
+    .drink-row:last-child { border-bottom: none; }
+    .drink-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      color: var(--green);
+    }
+    .drink-price {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--green-muted);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 20px 24px 48px;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(61,90,56,0.35);
+    }
+
+    /* ── MOBILE OVERRIDES ── */
+    @media (max-width: 400px) {
+      header {
+        padding: 36px 16px 22px;
+      }
+      header img.logo {
+        width: 130px;
+        height: 130px;
+      }
+      .hours {
+        gap: 20px;
+        padding: 0 16px 30px;
+      }
+      section {
+        padding: 0 12px 40px;
+      }
+      .grid {
+        gap: 8px;
+      }
+      .card-body {
+        padding: 10px 10px 12px;
+      }
+      .drink-row {
+        padding: 12px 16px;
+      }
+    }
+
+    @media (max-width: 320px) {
+      header img.logo {
+        width: 110px;
+        height: 110px;
+      }
+      .grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+    }
+
+    /* ── LIGHTBOX ── */
+    .card-img { cursor: zoom-in; transition: transform 0.2s ease; }
+    .card-img:active { transform: scale(0.97); }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(61,90,56,0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      z-index: 1000;
+    }
+    .lightbox.open { opacity: 1; visibility: visible; }
+    .lightbox-inner {
+      position: relative;
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      max-width: min(92vw, 520px);
+      width: 100%;
+      transform: scale(0.92);
+      transition: transform 0.25s ease;
+      box-shadow: 0 20px 60px rgba(61,90,56,0.35);
+    }
+    .lightbox.open .lightbox-inner { transform: scale(1); }
+    .lightbox-inner img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      object-fit: contain;
+      background: var(--cream);
+      border-radius: 8px;
+      display: block;
+    }
+    .lightbox-cap {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--green);
+      text-align: center;
+      padding: 14px 8px 6px;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(61,90,56,0.4);
+    }
+
+    /* ── ADD BUTTONS ── */
+    .add-btn {
+      margin-top: 8px;
+      width: 100%;
+      padding: 9px 10px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: opacity 0.15s ease, transform 0.1s ease;
+    }
+    .add-btn:active { transform: scale(0.97); }
+    .add-btn.added { background: #6b8a5f; }
+
+    /* inline stepper that replaces the add button */
+    .card-stepper {
+      margin-top: 8px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--green);
+      border-radius: 6px;
+      padding: 4px;
+    }
+    .card-stepper button {
+      width: 32px;
+      height: 30px;
+      border: none;
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      font-size: 18px;
+      line-height: 1;
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-stepper button:active { transform: scale(0.92); }
+    .card-stepper .step-qty {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      min-width: 24px;
+      text-align: center;
+    }
+    .mini-add {
+      margin-left: 10px;
+      width: 26px;
+      height: 26px;
+      flex-shrink: 0;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mini-add:active { transform: scale(0.92); }
+
+    /* ── CART BAR ── */
+    .cart-bar {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%) translateY(140%);
+      width: min(92vw, 460px);
+      background: var(--green);
+      color: #fff;
+      border-radius: 14px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 10px 30px rgba(61,90,56,0.4);
+      cursor: pointer;
+      z-index: 900;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .cart-bar.show { transform: translateX(-50%) translateY(0); }
+    .cart-bar-left { display: flex; align-items: center; gap: 10px; }
+    .cart-count {
+      background: #fff;
+      color: var(--green);
+      font-weight: 600;
+      font-size: 13px;
+      min-width: 24px;
+      height: 24px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 7px;
+    }
+    .cart-bar-label { font-size: 13px; font-weight: 500; letter-spacing: 0.03em; }
+    .cart-bar-total { font-size: 14px; font-weight: 600; }
+
+    /* ── CART PANEL ── */
+    .cart-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(61,90,56,0.5);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      z-index: 1100;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .cart-overlay.open { opacity: 1; visibility: visible; }
+    .cart-panel {
+      background: var(--cream);
+      width: 100%;
+      max-width: 480px;
+      max-height: 88vh;
+      border-radius: 18px 18px 0 0;
+      padding: 20px 18px calc(20px + env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      overflow: hidden;
+    }
+    .cart-overlay.open .cart-panel { transform: translateY(0); }
+    .cart-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .cart-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--green);
+    }
+    .cart-x {
+      background: none;
+      border: none;
+      font-size: 26px;
+      color: var(--green);
+      cursor: pointer;
+      line-height: 1;
+    }
+    .cart-items { overflow-y: auto; flex: 1; margin: 0 -2px; padding: 0 2px; }
+    .cart-empty {
+      text-align: center;
+      color: var(--green-muted);
+      font-size: 13px;
+      padding: 30px 0;
+    }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .cart-item-info { flex: 1; min-width: 0; }
+    .cart-item-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--green);
+    }
+    .cart-item-price { font-size: 11px; color: var(--green-muted); margin-top: 2px; }
+    .qty {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--cream);
+      border-radius: 20px;
+      padding: 4px 6px;
+    }
+    .qty button {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: none;
+      background: var(--green);
+      color: #fff;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qty span { font-size: 14px; font-weight: 600; color: var(--green); min-width: 16px; text-align: center; }
+    .cart-foot { margin-top: 14px; }
+    .plate-field { margin-bottom: 12px; }
+    .plate-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--green);
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+    .plate-row { display: flex; gap: 8px; }
+    .plate-country {
+      flex-shrink: 0;
+      width: 130px;
+      padding: 13px 10px;
+      border: 1.5px solid rgba(61,90,56,0.35);
+      border-radius: 10px;
+      background: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--green);
+      outline: none;
+      cursor: pointer;
+    }
+    .plate-country:focus { border-color: var(--green); }
+    .plate-input {
+      flex: 1;
+      width: 100%;
+      padding: 13px 14px;
+      border: 1.5px solid rgba(61,90,56,0.35);
+      border-radius: 10px;
+      background: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      color: var(--green);
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .plate-input:focus { border-color: var(--green); }
+    .plate-input.error { border-color: #c0392b; background: #fdf0ee; }
+    .plate-hint { font-size: 11px; color: #c0392b; margin-top: 5px; min-height: 14px; }
+    .cart-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 4px 4px 14px;
+      font-family: 'Playfair Display', serif;
+    }
+    .cart-total-row .lbl { font-size: 14px; color: var(--green); }
+    .cart-total-row .val { font-size: 20px; font-weight: 600; color: var(--green); }
+    .wa-btn {
+      width: 100%;
+      padding: 15px;
+      background: #25D366;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .wa-btn:active { transform: scale(0.99); }
+    .wa-btn svg { width: 20px; height: 20px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img class="logo" src="bruno-logo.png" alt="Bruno" />
+    <h1>Bruno — Doha</h1>
+    <div class="divider"></div>
+  </header>
+
+  <div class="hours">
+    <div class="hours-block">
+      <div class="days">Sat – Wed</div>
+      <div class="time">6:00 PM – 12:00 AM</div>
+    </div>
+    <div class="hours-sep"></div>
+    <div class="hours-block">
+      <div class="days">Thu – Fri</div>
+      <div class="time">6:00 PM – 1:00 AM</div>
+    </div>
+  </div>
+
+  <!-- PIZZAS -->
+  <section>
+    <h2 class="section-title">Pizzas</h2>
+    <div class="grid">
+
+      <div class="card">
+        <img class="card-img" src="menu-images/margherita.png" alt="Margherita" />
+        <div class="card-body">
+          <div class="card-header">
+            <span class="card-name">Margherita</span>
+            <span class="card-price">54 QAR</span>
+          </div>
+          <p class="card-desc">Fresh mozzarella · tomato sauce · fresh basil</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <img class="card-img" src="menu-images/chicken-buffalo.png" alt="Chicken Buffalo" />
+        <div class="card-body">
+          <div class="card-header">
+            <span class="card-name">Chicken Buffalo</span>
+            <span class="card-price">54 QAR</span>
+          </div>
+          <p class="card-desc">Buffalo chicken · cheese · ranch sauce</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <img class="card-img" src="menu-images/burrata-honey.png" alt="Burrata &amp; Honey" />
+        <div class="card-body">
+          <div class="card-header">
+            <span class="card-name">Burrata & Honey</span>
+            <span class="card-price">64 QAR</span>
+          </div>
+          <p class="card-desc">Burrata cheese · honey · fresh rocca</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <img class="card-img" src="menu-images/pepperoni.png" alt="Pepperoni" />
+        <div class="card-body">
+          <div class="card-header">
+            <span class="card-name">Pepperoni</span>
+            <span class="card-price">54 QAR</span>
+          </div>
+          <p class="card-desc">Pepperoni · cheese</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <img class="card-img" src="menu-images/lemoncillo.png" alt="Lemoncillo" />
+        <div class="card-body">
+          <div class="card-header">
+            <span class="card-name">Lemoncillo</span>
+            <span class="card-price">64 QAR</span>
+          </div>
+          <p class="card-desc">Fresh lemon · cheese · fresh basil</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <img class="card-img" src="menu-images/truffle.png" alt="Truffle" />
+        <div class="card-body">
+          <div class="card-header">
+            <span class="card-name">Truffle</span>
+            <span class="card-price">64 QAR</span>
+          </div>
+          <p class="card-desc">Truffle paste · cheese · fresh rocca</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <img class="card-img" src="menu-images/bbq-brisket.png" alt="BBQ Brisket" />
+        <div class="card-body">
+          <div class="card-header">
+            <span class="card-name">BBQ Brisket</span>
+            <span class="card-price">64 QAR</span>
+          </div>
+          <p class="card-desc">Beef brisket · cheese · BBQ ranch sauce</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SIDES -->
+  <section>
+    <h2 class="section-title">Sides</h2>
+    <div class="grid">
+
+      <div class="card">
+        <img class="card-img" src="menu-images/bechamel-bites.png" alt="Bechamel Bites" />
+        <div class="card-body">
+          <div class="card-header">
+            <span class="card-name">Bechamel Bites</span>
+            <span class="card-price">28 QAR</span>
+          </div>
+          <p class="card-desc">Bechamel · cheese · beef bacon jam</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <img class="card-img" src="menu-images/pannochie-fritte.png" alt="Pannochie Fritte" />
+        <div class="card-body">
+          <div class="card-header">
+            <span class="card-name">Pannochie Fritte</span>
+            <span class="card-price">28 QAR</span>
+          </div>
+          <p class="card-desc">Corn on cob · parmesan cheese · cajun spice</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <img class="card-img" src="menu-images/jalapeno-poppers.png" alt="Jalapeno Poppers" />
+        <div class="card-body">
+          <div class="card-header">
+            <span class="card-name">Jalapeno Poppers</span>
+            <span class="card-price">28 QAR</span>
+          </div>
+          <p class="card-desc">Fresh jalapeño · mixed cheese</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <img class="card-img" src="menu-images/arancini.png" alt="Arancini" />
+        <div class="card-body">
+          <div class="card-header">
+            <span class="card-name">Arancini</span>
+            <span class="card-price">28 QAR</span>
+          </div>
+          <p class="card-desc">Risotto · chicken · mushroom</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <img class="card-img" src="menu-images/brisket-croquettes.png" alt="Brisket Croquettes" />
+        <div class="card-body">
+          <div class="card-header">
+            <span class="card-name">Brisket Croquettes</span>
+            <span class="card-price">38 QAR</span>
+          </div>
+          <p class="card-desc">Beef brisket · cheese · BBQ honey</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <img class="card-img" src="menu-images/fries.png" alt="Fries" />
+        <div class="card-body">
+          <div class="card-header">
+            <span class="card-name">Fries</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px; margin-top:5px;">
+            <div class="opt-row" data-name="French Fries" data-price="13" style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:clamp(10px,2.8vw,12px); color:var(--green);">French Fries</span>
+              <span class="row-flex"><span style="font-size:clamp(10px,2.8vw,12px); font-weight:500; color:var(--green);">13 QAR</span></span>
+            </div>
+            <div style="height:1px; background:rgba(61,90,56,0.08);"></div>
+            <div class="opt-row" data-name="Parmesan Fries" data-price="20" style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:clamp(10px,2.8vw,12px); color:var(--green);">Parmesan Fries</span>
+              <span class="row-flex"><span style="font-size:clamp(10px,2.8vw,12px); font-weight:500; color:var(--green);">20 QAR</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- DRINKS -->
+  <section>
+    <h2 class="section-title">Drinks</h2>
+    <div class="drinks-grid">
+      <div class="drink-row opt-row" data-name="Sodas - Sparkling water" data-price="5">
+        <span class="drink-name">Sodas - Sparkling water</span>
+        <span class="row-flex"><span class="drink-price">5 QAR</span></span>
+      </div>
+      <div class="drink-row opt-row" data-name="Bottled Water" data-price="2">
+        <span class="drink-name">Bottled Water</span>
+        <span class="row-flex"><span class="drink-price">2 QAR</span></span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Bruno · Doha · @brunopizzza
+  </footer>
+
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-inner">
+      <button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
+      <img id="lightboxImg" src="" alt="" />
+      <div class="lightbox-cap" id="lightboxCap"></div>
+    </div>
+  </div>
+
+  <div class="cart-bar" id="cartBar">
+    <div class="cart-bar-left">
+      <span class="cart-count" id="cartCount">0</span>
+      <span class="cart-bar-label">View Order · عرض الطلب</span>
+    </div>
+    <span class="cart-bar-total" id="cartBarTotal">0 QAR</span>
+  </div>
+
+  <div class="cart-overlay" id="cartOverlay">
+    <div class="cart-panel">
+      <div class="cart-head">
+        <span class="cart-title">Your Order · طلبك</span>
+        <button class="cart-x" id="cartClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="cart-items" id="cartItems"></div>
+      <div class="cart-foot">
+        <div class="plate-field">
+          <label class="plate-label" for="plateInput">🚗 Plate Number · رقم السيارة</label>
+          <div class="plate-row">
+            <select class="plate-country" id="plateCountry">
+              <option value="Qatar · قطر">🇶🇦 Qatar · قطر</option>
+              <option value="KSA · السعودية">🇸🇦 KSA · السعودية</option>
+              <option value="UAE · الإمارات">🇦🇪 UAE · الإمارات</option>
+              <option value="Bahrain · البحرين">🇧🇭 Bahrain · البحرين</option>
+              <option value="Kuwait · الكويت">🇰🇼 Kuwait · الكويت</option>
+              <option value="Oman · عُمان">🇴🇲 Oman · عُمان</option>
+            </select>
+            <input class="plate-input" id="plateInput" type="text" inputmode="text"
+              placeholder="e.g. 123456" autocomplete="off" />
+          </div>
+          <div class="plate-hint" id="plateHint"></div>
+        </div>
+        <div class="cart-total-row">
+          <span class="lbl">Total · المجموع</span>
+          <span class="val" id="cartTotal">0 QAR</span>
+        </div>
+        <button class="wa-btn" id="waBtn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43-.14-.01-.31-.01-.48-.01a.92.92 0 0 0-.66.31c-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg>
+          Send Order · إرسال الطلب
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var lb = document.getElementById('lightbox');
+      var lbImg = document.getElementById('lightboxImg');
+      var lbCap = document.getElementById('lightboxCap');
+      var lbClose = document.getElementById('lightboxClose');
+
+      function open(src, name) {
+        lbImg.src = src;
+        lbImg.alt = name;
+        lbCap.textContent = name;
+        lb.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      function close() {
+        lb.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      document.querySelectorAll('.card-img').forEach(function (img) {
+        img.addEventListener('click', function () {
+          open(img.src, img.alt || '');
+        });
+      });
+
+      lbClose.addEventListener('click', close);
+      lb.addEventListener('click', function (e) {
+        if (e.target === lb) close();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') close();
+      });
+
+      /* ── CART / WHATSAPP ORDERING ── */
+      var WA_NUMBER = '97430184842';
+      var cart = {}; // key -> {name, price, qty}
+
+      var cartBar = document.getElementById('cartBar');
+      var cartCount = document.getElementById('cartCount');
+      var cartBarTotal = document.getElementById('cartBarTotal');
+      var cartOverlay = document.getElementById('cartOverlay');
+      var cartItemsEl = document.getElementById('cartItems');
+      var cartTotalEl = document.getElementById('cartTotal');
+      var cartCloseBtn = document.getElementById('cartClose');
+      var plateInput = document.getElementById('plateInput');
+      var plateCountry = document.getElementById('plateCountry');
+      var plateHint = document.getElementById('plateHint');
+      var waBtn = document.getElementById('waBtn');
+      var cardUpdaters = {}; // item name -> function(qty) to sync inline UI
+
+      function parsePrice(txt) {
+        var m = (txt || '').replace(/,/g, '').match(/[\d.]+/);
+        return m ? parseFloat(m[0]) : 0;
+      }
+      function totals() {
+        var qty = 0, sum = 0;
+        Object.keys(cart).forEach(function (k) {
+          qty += cart[k].qty;
+          sum += cart[k].qty * cart[k].price;
+        });
+        return { qty: qty, sum: sum };
+      }
+      function addItem(name, price) {
+        if (!cart[name]) cart[name] = { name: name, price: price, qty: 0 };
+        cart[name].qty += 1;
+        refresh();
+      }
+      function setQty(name, delta) {
+        if (!cart[name]) return;
+        cart[name].qty += delta;
+        if (cart[name].qty <= 0) delete cart[name];
+        refresh();
+      }
+      function refresh() {
+        var t = totals();
+        cartCount.textContent = t.qty;
+        cartBarTotal.textContent = t.sum + ' QAR';
+        cartTotalEl.textContent = t.sum + ' QAR';
+        if (t.qty > 0) cartBar.classList.add('show');
+        else { cartBar.classList.remove('show'); closeCart(); }
+        renderItems();
+        Object.keys(cardUpdaters).forEach(function (name) {
+          cardUpdaters[name](cart[name] ? cart[name].qty : 0);
+        });
+      }
+      function renderItems() {
+        var keys = Object.keys(cart);
+        if (!keys.length) {
+          cartItemsEl.innerHTML = '<div class="cart-empty">Your order is empty · سلتك فارغة</div>';
+          return;
+        }
+        var html = '';
+        keys.forEach(function (k) {
+          var it = cart[k];
+          html += '<div class="cart-item">' +
+            '<div class="cart-item-info">' +
+              '<div class="cart-item-name"></div>' +
+              '<div class="cart-item-price">' + it.price + ' QAR × ' + it.qty + ' = ' + (it.price * it.qty) + ' QAR</div>' +
+            '</div>' +
+            '<div class="qty">' +
+              '<button data-act="dec" data-key="' + encodeURIComponent(k) + '">&minus;</button>' +
+              '<span>' + it.qty + '</span>' +
+              '<button data-act="inc" data-key="' + encodeURIComponent(k) + '">+</button>' +
+            '</div>' +
+          '</div>';
+        });
+        cartItemsEl.innerHTML = html;
+        // set names safely (avoid HTML injection)
+        var nameEls = cartItemsEl.querySelectorAll('.cart-item-name');
+        keys.forEach(function (k, i) { nameEls[i].textContent = cart[k].name; });
+      }
+
+      cartItemsEl.addEventListener('click', function (e) {
+        var b = e.target.closest('button');
+        if (!b) return;
+        var key = decodeURIComponent(b.getAttribute('data-key'));
+        setQty(key, b.getAttribute('data-act') === 'inc' ? 1 : -1);
+      });
+
+      function openCart() { cartOverlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+      function closeCart() { cartOverlay.classList.remove('open'); document.body.style.overflow = ''; }
+      cartBar.addEventListener('click', openCart);
+      cartCloseBtn.addEventListener('click', closeCart);
+      cartOverlay.addEventListener('click', function (e) { if (e.target === cartOverlay) closeCart(); });
+
+      plateInput.addEventListener('input', function () {
+        plateInput.classList.remove('error');
+        plateHint.textContent = '';
+      });
+
+      waBtn.addEventListener('click', function () {
+        var t = totals();
+        if (t.qty === 0) return;
+        var plate = plateInput.value.trim();
+        if (!plate) {
+          plateInput.classList.add('error');
+          plateHint.textContent = 'Please enter your plate number · الرجاء إدخال رقم السيارة';
+          plateInput.focus();
+          return;
+        }
+        var country = plateCountry.value;
+        var lines = [];
+        lines.push('New Order · طلب جديد 🍕');
+        lines.push('━━━━━━━━━━━');
+        lines.push('🚗 Plate · رقم السيارة: ' + country + ' - ' + plate);
+        lines.push('━━━━━━━━━━━');
+        Object.keys(cart).forEach(function (k) {
+          var it = cart[k];
+          lines.push('• ' + it.qty + '× ' + it.name + ' = ' + (it.price * it.qty) + ' QAR');
+        });
+        lines.push('━━━━━━━━━━━');
+        lines.push('Total · المجموع: ' + t.sum + ' QAR');
+        var url = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(lines.join('\n'));
+        window.open(url, '_blank');
+      });
+
+      /* inject add button + inline stepper for single-price cards */
+      document.querySelectorAll('section .card').forEach(function (card) {
+        var nameEl = card.querySelector('.card-name');
+        var priceEl = card.querySelector('.card-header .card-price');
+        if (!nameEl || !priceEl) return; // skip cards without a single price (e.g. Fries)
+        var name = nameEl.textContent.trim();
+        var price = parsePrice(priceEl.textContent);
+        var body = card.querySelector('.card-body');
+
+        var btn = document.createElement('button');
+        btn.className = 'add-btn';
+        btn.textContent = 'Add · أضف';
+
+        var stepper = document.createElement('div');
+        stepper.className = 'card-stepper';
+        stepper.style.display = 'none';
+        var dec = document.createElement('button'); dec.innerHTML = '&minus;'; dec.setAttribute('aria-label', 'Decrease');
+        var qtySpan = document.createElement('span'); qtySpan.className = 'step-qty'; qtySpan.textContent = '0';
+        var inc = document.createElement('button'); inc.textContent = '+'; inc.setAttribute('aria-label', 'Increase');
+        stepper.appendChild(dec); stepper.appendChild(qtySpan); stepper.appendChild(inc);
+
+        btn.addEventListener('click', function () { addItem(name, price); });
+        inc.addEventListener('click', function () { setQty(name, 1); });
+        dec.addEventListener('click', function () { setQty(name, -1); });
+
+        cardUpdaters[name] = function (qty) {
+          if (qty > 0) {
+            btn.style.display = 'none';
+            stepper.style.display = 'flex';
+            qtySpan.textContent = qty;
+          } else {
+            btn.style.display = 'block';
+            stepper.style.display = 'none';
+          }
+        };
+
+        body.appendChild(btn);
+        body.appendChild(stepper);
+      });
+
+      /* inject mini add button + inline stepper for option rows (Fries / Drinks) */
+      document.querySelectorAll('.opt-row').forEach(function (row) {
+        var name = row.getAttribute('data-name');
+        var price = parsePrice(row.getAttribute('data-price'));
+        var holder = row.querySelector('.row-flex');
+        if (!holder) return;
+
+        var add = document.createElement('button');
+        add.className = 'mini-add';
+        add.textContent = '+';
+        add.setAttribute('aria-label', 'Add ' + name);
+
+        var step = document.createElement('span');
+        step.className = 'qty';
+        step.style.display = 'none';
+        step.style.marginLeft = '10px';
+        var d = document.createElement('button'); d.innerHTML = '&minus;';
+        var q = document.createElement('span'); q.textContent = '0';
+        var i = document.createElement('button'); i.textContent = '+';
+        step.appendChild(d); step.appendChild(q); step.appendChild(i);
+
+        add.addEventListener('click', function () { addItem(name, price); });
+        i.addEventListener('click', function () { setQty(name, 1); });
+        d.addEventListener('click', function () { setQty(name, -1); });
+
+        cardUpdaters[name] = function (qty) {
+          if (qty > 0) {
+            add.style.display = 'none';
+            step.style.display = 'flex';
+            q.textContent = qty;
+          } else {
+            add.style.display = 'inline-flex';
+            step.style.display = 'none';
+          }
+        };
+
+        holder.appendChild(add);
+        holder.appendChild(step);
+      });
+    })();
+  </script>
+
+</body>
+</html>
