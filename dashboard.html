@@ -243,7 +243,23 @@
     .act-received { background: var(--amber); color: #fff; }
     .act-done { background: var(--green); color: #fff; }
     .act-reopen { background: #fff; color: var(--green); border: 1.5px solid rgba(61,90,56,0.3); }
+    .act-cancel { background: #fff; color: var(--red); border: 1.5px solid rgba(192,57,43,0.4); }
+    .act-restore { background: #fff; color: var(--green); border: 1.5px solid rgba(61,90,56,0.3); }
     .act-btn:active { transform: scale(0.98); }
+
+    .order.cancelled { border-left-color: var(--red); opacity: 0.6; }
+    .status-pill.cancelled { background: rgba(192,57,43,0.12); color: var(--red); }
+    .order-timing {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 16px;
+      border-top: 1px solid var(--green-faint);
+      padding-top: 10px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: var(--green-muted);
+    }
+    .order-timing b { color: var(--green); font-weight: 600; }
 
     .config-warn {
       max-width: 760px;
@@ -291,6 +307,7 @@
     <div class="tabs">
       <div class="tab active" data-tab="active" id="tabActive">Active · النشطة <span class="badge hidden" id="activeBadge">0</span></div>
       <div class="tab" data-tab="done" id="tabDone">Completed · المكتملة</div>
+      <div class="tab" data-tab="cancelled" id="tabCancelled">Cancelled · ملغي</div>
     </div>
 
     <div class="orders" id="orders"></div>
@@ -308,6 +325,7 @@
       var ordersEl = document.getElementById('orders');
       var tabActive = document.getElementById('tabActive');
       var tabDone = document.getElementById('tabDone');
+      var tabCancelled = document.getElementById('tabCancelled');
       var activeBadge = document.getElementById('activeBadge');
       var soundToggle = document.getElementById('soundToggle');
       var clearBtn = document.getElementById('clearBtn');
@@ -414,22 +432,33 @@
       function statusLabel(s) {
         if (s === 'received') return 'Received · مستلم';
         if (s === 'done') return 'Done · مكتمل';
+        if (s === 'cancelled') return 'Cancelled · ملغي';
         return 'New · جديد';
+      }
+
+      function prepMinutes(a, b) {
+        if (!a || !a.toDate || !b || !b.toDate) return null;
+        var ms = b.toDate().getTime() - a.toDate().getTime();
+        if (ms < 0) return null;
+        return Math.round(ms / 60000);
       }
 
       function render() {
         var list = orders.filter(function (o) {
-          return currentTab === 'done' ? o.status === 'done' : o.status !== 'done';
+          if (currentTab === 'done') return o.status === 'done';
+          if (currentTab === 'cancelled') return o.status === 'cancelled';
+          return o.status !== 'done' && o.status !== 'cancelled';
         });
 
-        var activeCount = orders.filter(function (o) { return o.status !== 'done'; }).length;
+        var activeCount = orders.filter(function (o) { return o.status !== 'done' && o.status !== 'cancelled'; }).length;
         if (activeCount > 0) { activeBadge.textContent = activeCount; activeBadge.classList.remove('hidden'); }
         else { activeBadge.classList.add('hidden'); }
 
         if (!list.length) {
-          ordersEl.innerHTML = '<div class="empty">' +
-            (currentTab === 'done' ? 'No completed orders yet · لا توجد طلبات مكتملة' : 'No active orders · لا توجد طلبات نشطة') +
-            '</div>';
+          var emptyMsg = 'No active orders · لا توجد طلبات نشطة';
+          if (currentTab === 'done') emptyMsg = 'No completed orders yet · لا توجد طلبات مكتملة';
+          else if (currentTab === 'cancelled') emptyMsg = 'No cancelled orders · لا توجد طلبات ملغاة';
+          ordersEl.innerHTML = '<div class="empty">' + emptyMsg + '</div>';
           return;
         }
 
@@ -440,15 +469,29 @@
               '<span>' + esc((it.price || 0) * (it.qty || 0)) + ' QAR</span></div>';
           }).join('');
 
+          var cancelBtn = '<button class="act-btn act-cancel" data-act="cancel" data-id="' + esc(o.id) + '">✕ Cancel · إلغاء</button>';
           var actions = '';
           if (o.status === 'new') {
             actions = '<button class="act-btn act-received" data-act="received" data-id="' + esc(o.id) + '">✓ Received · استلمت</button>' +
-                      '<button class="act-btn act-done" data-act="done" data-id="' + esc(o.id) + '">✓✓ Done · تم الانتهاء</button>';
+                      '<button class="act-btn act-done" data-act="done" data-id="' + esc(o.id) + '">✓✓ Done · تم الانتهاء</button>' +
+                      cancelBtn;
           } else if (o.status === 'received') {
-            actions = '<button class="act-btn act-done" data-act="done" data-id="' + esc(o.id) + '">✓✓ Done · تم الانتهاء</button>';
+            actions = '<button class="act-btn act-done" data-act="done" data-id="' + esc(o.id) + '">✓✓ Done · تم الانتهاء</button>' +
+                      cancelBtn;
+          } else if (o.status === 'done') {
+            actions = '<button class="act-btn act-reopen" data-act="reopen" data-id="' + esc(o.id) + '">↩ Reopen · إعادة فتح</button>' +
+                      cancelBtn;
           } else {
-            actions = '<button class="act-btn act-reopen" data-act="received" data-id="' + esc(o.id) + '">↩ Reopen · إعادة فتح</button>';
+            actions = '<button class="act-btn act-restore" data-act="restore" data-id="' + esc(o.id) + '">↩ Restore · استعادة</button>';
           }
+
+          var timingParts = [];
+          if (o.receivedAt) timingParts.push('<span>Received · استلام: <b>' + esc(fmtTime(o.receivedAt)) + '</b></span>');
+          if (o.doneAt) timingParts.push('<span>Done · إنهاء: <b>' + esc(fmtTime(o.doneAt)) + '</b></span>');
+          if (o.status === 'cancelled' && o.cancelledAt) timingParts.push('<span>Cancelled · إلغاء: <b>' + esc(fmtTime(o.cancelledAt)) + '</b></span>');
+          var prep = prepMinutes(o.receivedAt, o.doneAt);
+          if (prep !== null) timingParts.push('<span>Prep · التحضير: <b>' + esc(prep) + ' min</b></span>');
+          var timingHtml = timingParts.length ? '<div class="order-timing">' + timingParts.join('') + '</div>' : '';
 
           var phoneHtml = '';
           if (o.phone) {
@@ -465,6 +508,7 @@
               '<span class="status-pill ' + esc(o.status) + '">' + esc(statusLabel(o.status)) + '</span></div>' +
             '</div>' +
             '<div class="order-items">' + itemsHtml + '</div>' +
+            timingHtml +
             '<div class="order-total"><span class="lbl">Total · المجموع</span><span class="val">' + esc(o.total) + ' QAR</span></div>' +
             '<div class="order-actions">' + actions + '</div>' +
           '</div>';
@@ -478,8 +522,20 @@
         var id = b.getAttribute('data-id');
         var act = b.getAttribute('data-act');
         if (!id || !act) return;
+        if (act === 'cancel' && !confirm('Cancel this order? · إلغاء هذا الطلب؟')) return;
+
+        var ts = firebase.firestore.FieldValue.serverTimestamp;
+        var del = firebase.firestore.FieldValue.delete;
+        var upd;
+        if (act === 'received') upd = { status: 'received', receivedAt: ts() };
+        else if (act === 'done') upd = { status: 'done', doneAt: ts() };
+        else if (act === 'cancel') upd = { status: 'cancelled', cancelledAt: ts() };
+        else if (act === 'reopen') upd = { status: 'received', doneAt: del() };
+        else if (act === 'restore') upd = { status: 'new', receivedAt: del(), doneAt: del(), cancelledAt: del() };
+        else upd = { status: act };
+
         b.disabled = true;
-        db.collection(COLL).doc(id).update({ status: act }).catch(function () {
+        db.collection(COLL).doc(id).update(upd).catch(function () {
           b.disabled = false;
           alert('Could not update. Check your connection. · تعذّر التحديث.');
         });
@@ -489,10 +545,12 @@
         currentTab = tab;
         tabActive.classList.toggle('active', tab === 'active');
         tabDone.classList.toggle('active', tab === 'done');
+        tabCancelled.classList.toggle('active', tab === 'cancelled');
         render();
       }
       tabActive.addEventListener('click', function () { selectTab('active'); });
       tabDone.addEventListener('click', function () { selectTab('done'); });
+      tabCancelled.addEventListener('click', function () { selectTab('cancelled'); });
 
       function startListening() {
         if (unsub) return;
