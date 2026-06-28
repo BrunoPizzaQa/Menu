@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -596,6 +599,73 @@
     }
     .wa-btn:active { transform: scale(0.99); }
     .wa-btn svg { width: 20px; height: 20px; }
+    .wa-btn:disabled { opacity: 0.7; cursor: default; }
+
+    /* ── SUCCESS OVERLAY ── */
+    .ok-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(61,90,56,0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      z-index: 1200;
+    }
+    .ok-overlay.open { opacity: 1; visibility: visible; }
+    .ok-card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 32px 26px 28px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      transform: scale(0.9);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 20px 60px rgba(61,90,56,0.35);
+    }
+    .ok-overlay.open .ok-card { transform: scale(1); }
+    .ok-check {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      font-size: 34px;
+      line-height: 64px;
+      margin: 0 auto 16px;
+    }
+    .ok-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+    .ok-msg {
+      font-size: 13px;
+      color: var(--green-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .ok-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .ok-btn:active { transform: scale(0.99); }
   </style>
 </head>
 <body>
@@ -821,6 +891,15 @@
     <span class="cart-bar-total" id="cartBarTotal">0 QAR</span>
   </div>
 
+  <div class="ok-overlay" id="okOverlay">
+    <div class="ok-card">
+      <div class="ok-check">&#10003;</div>
+      <div class="ok-title">Order Sent · تم إرسال الطلب</div>
+      <div class="ok-msg">We received your order and will prepare it. Please wait in your car.<br>استلمنا طلبك وبنجهّزه. الرجاء الانتظار في سيارتك.</div>
+      <button class="ok-btn" id="okBtn">Done · تمام</button>
+    </div>
+  </div>
+
   <div class="cart-overlay" id="cartOverlay">
     <div class="cart-panel">
       <div class="cart-head">
@@ -844,6 +923,22 @@
               placeholder="e.g. 123456" autocomplete="off" />
           </div>
           <div class="plate-hint" id="plateHint"></div>
+        </div>
+        <div class="plate-field">
+          <label class="plate-label" for="phoneInput">📱 Mobile Number · رقم الجوال</label>
+          <div class="plate-row">
+            <select class="plate-country" id="phoneCountry">
+              <option value="+974">🇶🇦 +974</option>
+              <option value="+966">🇸🇦 +966</option>
+              <option value="+971">🇦🇪 +971</option>
+              <option value="+973">🇧🇭 +973</option>
+              <option value="+965">🇰🇼 +965</option>
+              <option value="+968">🇴🇲 +968</option>
+            </select>
+            <input class="plate-input" id="phoneInput" type="tel" inputmode="numeric"
+              placeholder="e.g. 3312 3456" autocomplete="tel" />
+          </div>
+          <div class="plate-hint" id="phoneHint"></div>
         </div>
         <div class="cart-total-row">
           <span class="lbl">Total · المجموع</span>
@@ -890,9 +985,18 @@
         if (e.key === 'Escape') close();
       });
 
-      /* ── CART / WHATSAPP ORDERING ── */
+      /* ── CART / CLOUD ORDERING ── */
       var WA_NUMBER = '97430184842';
       var cart = {}; // key -> {name, price, qty}
+
+      /* Firebase init (orders are saved to the cloud dashboard) */
+      var db = null;
+      try {
+        if (window.firebase && window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey !== 'REPLACE_ME') {
+          firebase.initializeApp(window.FIREBASE_CONFIG);
+          db = firebase.firestore();
+        }
+      } catch (err) { db = null; }
 
       var cartBar = document.getElementById('cartBar');
       var cartCount = document.getElementById('cartCount');
@@ -904,6 +1008,9 @@
       var plateInput = document.getElementById('plateInput');
       var plateCountry = document.getElementById('plateCountry');
       var plateHint = document.getElementById('plateHint');
+      var phoneInput = document.getElementById('phoneInput');
+      var phoneCountry = document.getElementById('phoneCountry');
+      var phoneHint = document.getElementById('phoneHint');
       var waBtn = document.getElementById('waBtn');
       var cardUpdaters = {}; // item name -> function(qty) to sync inline UI
 
@@ -986,6 +1093,49 @@
         plateInput.classList.remove('error');
         plateHint.textContent = '';
       });
+      phoneInput.addEventListener('input', function () {
+        phoneInput.classList.remove('error');
+        phoneHint.textContent = '';
+      });
+
+      var okOverlay = document.getElementById('okOverlay');
+      var okBtn = document.getElementById('okBtn');
+
+      function buildWhatsAppUrl(country, plate, phone, t) {
+        var lines = [];
+        lines.push('New Order · طلب جديد 🍕');
+        lines.push('━━━━━━━━━━━');
+        lines.push('🚗 Plate · رقم السيارة: ' + country + ' - ' + plate);
+        lines.push('📱 Mobile · الجوال: ' + phone);
+        lines.push('━━━━━━━━━━━');
+        Object.keys(cart).forEach(function (k) {
+          var it = cart[k];
+          lines.push('• ' + it.qty + '× ' + it.name + ' = ' + (it.price * it.qty) + ' QAR');
+        });
+        lines.push('━━━━━━━━━━━');
+        lines.push('Total · المجموع: ' + t.sum + ' QAR');
+        return 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(lines.join('\n'));
+      }
+
+      function resetAfterOrder() {
+        cart = {};
+        refresh();
+        plateInput.value = '';
+        phoneInput.value = '';
+      }
+
+      function showSuccess() {
+        closeCart();
+        okOverlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      okBtn.addEventListener('click', function () {
+        okOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+      okOverlay.addEventListener('click', function (e) {
+        if (e.target === okOverlay) { okOverlay.classList.remove('open'); document.body.style.overflow = ''; }
+      });
 
       waBtn.addEventListener('click', function () {
         var t = totals();
@@ -998,19 +1148,51 @@
           return;
         }
         var country = plateCountry.value;
-        var lines = [];
-        lines.push('New Order · طلب جديد 🍕');
-        lines.push('━━━━━━━━━━━');
-        lines.push('🚗 Plate · رقم السيارة: ' + country + ' - ' + plate);
-        lines.push('━━━━━━━━━━━');
-        Object.keys(cart).forEach(function (k) {
-          var it = cart[k];
-          lines.push('• ' + it.qty + '× ' + it.name + ' = ' + (it.price * it.qty) + ' QAR');
+
+        var phoneDigits = phoneInput.value.replace(/[^\d]/g, '');
+        if (phoneDigits.length < 6) {
+          phoneInput.classList.add('error');
+          phoneHint.textContent = 'Please enter a valid mobile number · الرجاء إدخال رقم جوال صحيح';
+          phoneInput.focus();
+          return;
+        }
+        var phone = phoneCountry.value + ' ' + phoneDigits;
+
+        var items = Object.keys(cart).map(function (k) {
+          return { name: cart[k].name, qty: cart[k].qty, price: cart[k].price };
         });
-        lines.push('━━━━━━━━━━━');
-        lines.push('Total · المجموع: ' + t.sum + ' QAR');
-        var url = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(lines.join('\n'));
-        window.open(url, '_blank');
+
+        // Fallback path: if the cloud is not configured, use WhatsApp.
+        if (!db) {
+          window.open(buildWhatsAppUrl(country, plate, phone, t), '_blank');
+          resetAfterOrder();
+          return;
+        }
+
+        var originalLabel = waBtn.innerHTML;
+        waBtn.disabled = true;
+        waBtn.textContent = 'Sending… · جارٍ الإرسال…';
+
+        db.collection(window.ORDERS_COLLECTION || 'orders').add({
+          country: country,
+          plate: plate,
+          phone: phone,
+          items: items,
+          total: t.sum,
+          status: 'new',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(function () {
+          waBtn.disabled = false;
+          waBtn.innerHTML = originalLabel;
+          resetAfterOrder();
+          showSuccess();
+        }).catch(function () {
+          // On any cloud error, never lose the order — fall back to WhatsApp.
+          waBtn.disabled = false;
+          waBtn.innerHTML = originalLabel;
+          window.open(buildWhatsAppUrl(country, plate, phone, t), '_blank');
+          resetAfterOrder();
+        });
       });
 
       /* inject add button + inline stepper for single-price cards */

@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Bruno — Orders Dashboard</title>
+  <link rel="icon" href="favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #F5F2EC;
+      --green: #3D5A38;
+      --green-muted: rgba(61,90,56,0.5);
+      --green-faint: rgba(61,90,56,0.08);
+      --amber: #b9821f;
+      --red: #c0392b;
+    }
+    html { font-size: 16px; }
+    body {
+      background: var(--cream);
+      color: var(--green);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* ── LOGIN ── */
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 36px 28px 30px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 16px 50px rgba(61,90,56,0.14);
+      text-align: center;
+    }
+    .login-card img { width: 88px; height: 88px; object-fit: contain; margin-bottom: 10px; }
+    .login-card h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .login-card p { font-size: 12px; color: var(--green-muted); margin-bottom: 22px; letter-spacing: 0.02em; }
+    .login-card input {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1.5px solid rgba(61,90,56,0.3);
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      color: var(--green);
+      margin-bottom: 10px;
+      outline: none;
+    }
+    .login-card input:focus { border-color: var(--green); }
+    .login-card button {
+      width: 100%;
+      padding: 14px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .login-card button:disabled { opacity: 0.7; cursor: default; }
+    .login-err { color: var(--red); font-size: 12px; min-height: 16px; margin-top: 10px; }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--green);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      box-shadow: 0 2px 12px rgba(61,90,56,0.25);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .topbar-left img { width: 34px; height: 34px; object-fit: contain; background:#fff; border-radius:50%; padding:3px; }
+    .topbar-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; }
+    .topbar-actions { display: flex; align-items: center; gap: 8px; }
+    .sound-toggle, .logout-btn, .clear-btn {
+      background: rgba(255,255,255,0.16);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .sound-toggle.off { opacity: 0.55; }
+    .clear-btn { background: rgba(192,57,43,0.85); }
+    .clear-btn:disabled { opacity: 0.6; cursor: default; }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 14px 16px 0;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .tab {
+      flex: 1;
+      padding: 10px;
+      background: #fff;
+      border: 1.5px solid rgba(61,90,56,0.15);
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--green-muted);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+    .tab.active { background: var(--green); color: #fff; border-color: var(--green); }
+    .tab .badge {
+      display: inline-block;
+      background: var(--red);
+      color: #fff;
+      font-size: 11px;
+      min-width: 18px;
+      height: 18px;
+      line-height: 18px;
+      border-radius: 9px;
+      padding: 0 5px;
+      margin-left: 5px;
+    }
+    .tab.active .badge { background: #fff; color: var(--green); }
+
+    /* ── ORDERS ── */
+    .orders {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 14px 16px 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .empty {
+      text-align: center;
+      color: var(--green-muted);
+      font-size: 14px;
+      padding: 60px 20px;
+    }
+    .order {
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 4px 16px rgba(61,90,56,0.07);
+      border-left: 5px solid rgba(61,90,56,0.2);
+    }
+    .order.new { border-left-color: var(--red); animation: pop 0.4s ease; }
+    .order.received { border-left-color: var(--amber); }
+    .order.done { border-left-color: var(--green); opacity: 0.85; }
+    @keyframes pop { 0% { transform: scale(0.97); } 60% { transform: scale(1.01); } 100% { transform: scale(1); } }
+    .order-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .order-plate {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--green);
+      line-height: 1.3;
+    }
+    .order-country { font-size: 12px; color: var(--green-muted); margin-top: 2px; }
+    .order-phone { font-size: 13px; margin-top: 5px; }
+    .order-phone a { color: var(--green); text-decoration: none; font-weight: 600; }
+    .order-phone a:hover { text-decoration: underline; }
+    .order-meta { text-align: right; flex-shrink: 0; }
+    .order-time { font-size: 11px; color: var(--green-muted); white-space: nowrap; line-height: 1.5; }
+    .status-pill {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 20px;
+      margin-top: 6px;
+    }
+    .status-pill.new { background: rgba(192,57,43,0.12); color: var(--red); }
+    .status-pill.received { background: rgba(185,130,31,0.14); color: var(--amber); }
+    .status-pill.done { background: var(--green-faint); color: var(--green); }
+    .order-items { border-top: 1px solid var(--green-faint); padding-top: 10px; margin-bottom: 12px; }
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--green);
+      padding: 3px 0;
+    }
+    .order-item .q { font-weight: 600; }
+    .order-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-top: 1px solid var(--green-faint);
+      padding-top: 10px;
+      font-family: 'Playfair Display', serif;
+    }
+    .order-total .lbl { font-size: 13px; color: var(--green-muted); }
+    .order-total .val { font-size: 18px; font-weight: 600; color: var(--green); }
+    .order-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .act-btn {
+      flex: 1;
+      padding: 11px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+    .act-received { background: var(--amber); color: #fff; }
+    .act-done { background: var(--green); color: #fff; }
+    .act-reopen { background: #fff; color: var(--green); border: 1.5px solid rgba(61,90,56,0.3); }
+    .act-btn:active { transform: scale(0.98); }
+
+    .config-warn {
+      max-width: 760px;
+      margin: 16px auto;
+      background: #fdf0ee;
+      color: var(--red);
+      border: 1px solid rgba(192,57,43,0.3);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div class="login-wrap" id="loginWrap">
+    <div class="login-card">
+      <img src="bruno-logo.png" alt="Bruno" />
+      <h1>Bruno Orders</h1>
+      <p>Staff Login · دخول الموظفين</p>
+      <input type="email" id="email" placeholder="Email · البريد" autocomplete="username" />
+      <input type="password" id="password" placeholder="Password · كلمة المرور" autocomplete="current-password" />
+      <button id="loginBtn">Sign In · تسجيل الدخول</button>
+      <div class="login-err" id="loginErr"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dash" class="hidden">
+    <div class="topbar">
+      <div class="topbar-left">
+        <img src="bruno-logo.png" alt="Bruno" />
+        <span class="topbar-title">Orders · الطلبات</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="sound-toggle" id="soundToggle" title="New order sound">🔔 On</button>
+        <button class="clear-btn" id="clearBtn" title="Delete all orders">🗑 حذف الكل</button>
+        <button class="logout-btn" id="logoutBtn">Logout · خروج</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="active" id="tabActive">Active · النشطة <span class="badge hidden" id="activeBadge">0</span></div>
+      <div class="tab" data-tab="done" id="tabDone">Completed · المكتملة</div>
+    </div>
+
+    <div class="orders" id="orders"></div>
+  </div>
+
+  <script>
+    (function () {
+      var loginWrap = document.getElementById('loginWrap');
+      var dash = document.getElementById('dash');
+      var emailEl = document.getElementById('email');
+      var passEl = document.getElementById('password');
+      var loginBtn = document.getElementById('loginBtn');
+      var loginErr = document.getElementById('loginErr');
+      var logoutBtn = document.getElementById('logoutBtn');
+      var ordersEl = document.getElementById('orders');
+      var tabActive = document.getElementById('tabActive');
+      var tabDone = document.getElementById('tabDone');
+      var activeBadge = document.getElementById('activeBadge');
+      var soundToggle = document.getElementById('soundToggle');
+      var clearBtn = document.getElementById('clearBtn');
+
+      var configured = window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey !== 'REPLACE_ME';
+      if (!configured) {
+        loginWrap.innerHTML = '<div class="config-warn">⚠️ Firebase is not configured yet. Add your Firebase web config to <b>firebase-config.js</b> to enable the dashboard.<br><br>لم يتم ضبط Firebase بعد. أضف إعدادات Firebase في ملف <b>firebase-config.js</b>.</div>';
+        return;
+      }
+
+      firebase.initializeApp(window.FIREBASE_CONFIG);
+      var auth = firebase.auth();
+      var db = firebase.firestore();
+      var COLL = window.ORDERS_COLLECTION || 'orders';
+
+      var currentTab = 'active';
+      var orders = [];
+      var unsub = null;
+      var soundOn = true;
+      var knownNewIds = {};
+      var firstLoad = true;
+
+      /* ── new-order chime via WebAudio (no asset needed) ── */
+      var audioCtx = null;
+      function chime() {
+        if (!soundOn) return;
+        try {
+          audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+          var o = audioCtx.createOscillator();
+          var g = audioCtx.createGain();
+          o.connect(g); g.connect(audioCtx.destination);
+          o.type = 'sine';
+          o.frequency.setValueAtTime(880, audioCtx.currentTime);
+          o.frequency.setValueAtTime(1175, audioCtx.currentTime + 0.13);
+          g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
+          o.start();
+          o.stop(audioCtx.currentTime + 0.42);
+        } catch (e) { /* ignore */ }
+      }
+
+      soundToggle.addEventListener('click', function () {
+        soundOn = !soundOn;
+        soundToggle.textContent = soundOn ? '🔔 On' : '🔕 Off';
+        soundToggle.classList.toggle('off', !soundOn);
+        if (soundOn) { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); }
+      });
+
+      /* ── delete ALL orders (clears the database) ── */
+      clearBtn.addEventListener('click', function () {
+        if (!orders.length) {
+          alert('No orders to delete · لا توجد طلبات للحذف');
+          return;
+        }
+        var ok = confirm('Delete ALL orders in the database permanently? This cannot be undone.\n\nحذف كل الطلبات في قاعدة البيانات نهائياً؟ لا يمكن التراجع.');
+        if (!ok) return;
+        clearBtn.disabled = true;
+        var origLabel = clearBtn.textContent;
+        clearBtn.textContent = '… جارٍ الحذف';
+
+        db.collection(COLL).get().then(function (snap) {
+          var docs = snap.docs;
+          function deleteChunk(i) {
+            if (i >= docs.length) return Promise.resolve();
+            var batch = db.batch();
+            docs.slice(i, i + 400).forEach(function (d) { batch.delete(d.ref); });
+            return batch.commit().then(function () { return deleteChunk(i + 400); });
+          }
+          return deleteChunk(0);
+        }).then(function () {
+          knownNewIds = {};
+          clearBtn.disabled = false;
+          clearBtn.textContent = origLabel;
+        }).catch(function (e) {
+          clearBtn.disabled = false;
+          clearBtn.textContent = origLabel;
+          alert('Could not delete orders. · تعذّر حذف الطلبات.\n' + e.message);
+        });
+      });
+
+      function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+
+      function fmtTime(ts) {
+        if (!ts || !ts.toDate) return '';
+        var d = ts.toDate();
+        var h = d.getHours(), m = d.getMinutes();
+        var ap = h >= 12 ? 'PM' : 'AM';
+        h = h % 12; if (h === 0) h = 12;
+        return h + ':' + (m < 10 ? '0' + m : m) + ' ' + ap;
+      }
+
+      function fmtDate(ts) {
+        if (!ts || !ts.toDate) return '';
+        var d = ts.toDate();
+        var day = d.getDate(), mon = d.getMonth() + 1, yr = d.getFullYear();
+        return (day < 10 ? '0' + day : day) + '/' + (mon < 10 ? '0' + mon : mon) + '/' + yr;
+      }
+
+      function statusLabel(s) {
+        if (s === 'received') return 'Received · مستلم';
+        if (s === 'done') return 'Done · مكتمل';
+        return 'New · جديد';
+      }
+
+      function render() {
+        var list = orders.filter(function (o) {
+          return currentTab === 'done' ? o.status === 'done' : o.status !== 'done';
+        });
+
+        var activeCount = orders.filter(function (o) { return o.status !== 'done'; }).length;
+        if (activeCount > 0) { activeBadge.textContent = activeCount; activeBadge.classList.remove('hidden'); }
+        else { activeBadge.classList.add('hidden'); }
+
+        if (!list.length) {
+          ordersEl.innerHTML = '<div class="empty">' +
+            (currentTab === 'done' ? 'No completed orders yet · لا توجد طلبات مكتملة' : 'No active orders · لا توجد طلبات نشطة') +
+            '</div>';
+          return;
+        }
+
+        var html = '';
+        list.forEach(function (o) {
+          var itemsHtml = (o.items || []).map(function (it) {
+            return '<div class="order-item"><span><span class="q">' + esc(it.qty) + '×</span> ' + esc(it.name) + '</span>' +
+              '<span>' + esc((it.price || 0) * (it.qty || 0)) + ' QAR</span></div>';
+          }).join('');
+
+          var actions = '';
+          if (o.status === 'new') {
+            actions = '<button class="act-btn act-received" data-act="received" data-id="' + esc(o.id) + '">✓ Received · استلمت</button>' +
+                      '<button class="act-btn act-done" data-act="done" data-id="' + esc(o.id) + '">✓✓ Done · تم الانتهاء</button>';
+          } else if (o.status === 'received') {
+            actions = '<button class="act-btn act-done" data-act="done" data-id="' + esc(o.id) + '">✓✓ Done · تم الانتهاء</button>';
+          } else {
+            actions = '<button class="act-btn act-reopen" data-act="received" data-id="' + esc(o.id) + '">↩ Reopen · إعادة فتح</button>';
+          }
+
+          var phoneHtml = '';
+          if (o.phone) {
+            var telHref = String(o.phone).replace(/[^\d+]/g, '');
+            phoneHtml = '<div class="order-phone">📱 <a href="tel:' + esc(telHref) + '">' + esc(o.phone) + '</a></div>';
+          }
+
+          html += '<div class="order ' + esc(o.status) + '">' +
+            '<div class="order-top">' +
+              '<div><div class="order-plate">🚗 ' + esc(o.plate) + '</div>' +
+              '<div class="order-country">' + esc(o.country) + '</div>' +
+              phoneHtml + '</div>' +
+              '<div class="order-meta"><div class="order-time">' + esc(fmtDate(o.createdAt)) + '<br>' + esc(fmtTime(o.createdAt)) + '</div>' +
+              '<span class="status-pill ' + esc(o.status) + '">' + esc(statusLabel(o.status)) + '</span></div>' +
+            '</div>' +
+            '<div class="order-items">' + itemsHtml + '</div>' +
+            '<div class="order-total"><span class="lbl">Total · المجموع</span><span class="val">' + esc(o.total) + ' QAR</span></div>' +
+            '<div class="order-actions">' + actions + '</div>' +
+          '</div>';
+        });
+        ordersEl.innerHTML = html;
+      }
+
+      ordersEl.addEventListener('click', function (e) {
+        var b = e.target.closest('button');
+        if (!b) return;
+        var id = b.getAttribute('data-id');
+        var act = b.getAttribute('data-act');
+        if (!id || !act) return;
+        b.disabled = true;
+        db.collection(COLL).doc(id).update({ status: act }).catch(function () {
+          b.disabled = false;
+          alert('Could not update. Check your connection. · تعذّر التحديث.');
+        });
+      });
+
+      function selectTab(tab) {
+        currentTab = tab;
+        tabActive.classList.toggle('active', tab === 'active');
+        tabDone.classList.toggle('active', tab === 'done');
+        render();
+      }
+      tabActive.addEventListener('click', function () { selectTab('active'); });
+      tabDone.addEventListener('click', function () { selectTab('done'); });
+
+      function startListening() {
+        if (unsub) return;
+        unsub = db.collection(COLL).orderBy('createdAt', 'desc').limit(200)
+          .onSnapshot(function (snap) {
+            var newArrived = false;
+            var next = [];
+            snap.forEach(function (doc) {
+              var d = doc.data();
+              d.id = doc.id;
+              next.push(d);
+              if (d.status === 'new' && !knownNewIds[doc.id]) {
+                knownNewIds[doc.id] = true;
+                if (!firstLoad) newArrived = true;
+              }
+            });
+            orders = next;
+            firstLoad = false;
+            render();
+            if (newArrived) chime();
+          }, function (err) {
+            ordersEl.innerHTML = '<div class="config-warn">Could not load orders. Check Firestore rules / connection.<br>تعذّر تحميل الطلبات. تحقق من القواعد والاتصال.<br><br>' + esc(err.message) + '</div>';
+          });
+      }
+      function stopListening() { if (unsub) { unsub(); unsub = null; } orders = []; knownNewIds = {}; firstLoad = true; }
+
+      /* ── AUTH ── */
+      function doLogin() {
+        loginErr.textContent = '';
+        var email = emailEl.value.trim();
+        var pass = passEl.value;
+        if (!email || !pass) { loginErr.textContent = 'Enter email and password · أدخل البريد وكلمة المرور'; return; }
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Signing in… · جارٍ الدخول…';
+        auth.signInWithEmailAndPassword(email, pass).catch(function (err) {
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Sign In · تسجيل الدخول';
+          loginErr.textContent = 'Login failed. Check your credentials. · فشل الدخول، تحقق من البيانات.';
+        });
+      }
+      loginBtn.addEventListener('click', doLogin);
+      passEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
+      logoutBtn.addEventListener('click', function () { auth.signOut(); });
+
+      auth.onAuthStateChanged(function (user) {
+        if (user) {
+          loginWrap.classList.add('hidden');
+          dash.classList.remove('hidden');
+          startListening();
+        } else {
+          stopListening();
+          dash.classList.add('hidden');
+          loginWrap.classList.remove('hidden');
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Sign In · تسجيل الدخول';
+          passEl.value = '';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
