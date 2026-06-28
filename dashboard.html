@@ -306,6 +306,7 @@
 
     <div class="tabs">
       <div class="tab active" data-tab="active" id="tabActive">Active · النشطة <span class="badge hidden" id="activeBadge">0</span></div>
+      <div class="tab" data-tab="received" id="tabReceived">Received · المستلمة <span class="badge hidden" id="receivedBadge">0</span></div>
       <div class="tab" data-tab="done" id="tabDone">Completed · المكتملة</div>
       <div class="tab" data-tab="cancelled" id="tabCancelled">Cancelled · ملغي</div>
     </div>
@@ -324,9 +325,11 @@
       var logoutBtn = document.getElementById('logoutBtn');
       var ordersEl = document.getElementById('orders');
       var tabActive = document.getElementById('tabActive');
+      var tabReceived = document.getElementById('tabReceived');
       var tabDone = document.getElementById('tabDone');
       var tabCancelled = document.getElementById('tabCancelled');
       var activeBadge = document.getElementById('activeBadge');
+      var receivedBadge = document.getElementById('receivedBadge');
       var soundToggle = document.getElementById('soundToggle');
       var clearBtn = document.getElementById('clearBtn');
 
@@ -445,18 +448,24 @@
 
       function render() {
         var list = orders.filter(function (o) {
+          if (currentTab === 'received') return o.status === 'received';
           if (currentTab === 'done') return o.status === 'done';
           if (currentTab === 'cancelled') return o.status === 'cancelled';
-          return o.status !== 'done' && o.status !== 'cancelled';
+          return o.status === 'new';
         });
 
-        var activeCount = orders.filter(function (o) { return o.status !== 'done' && o.status !== 'cancelled'; }).length;
+        var activeCount = orders.filter(function (o) { return o.status === 'new'; }).length;
         if (activeCount > 0) { activeBadge.textContent = activeCount; activeBadge.classList.remove('hidden'); }
         else { activeBadge.classList.add('hidden'); }
 
+        var receivedCount = orders.filter(function (o) { return o.status === 'received'; }).length;
+        if (receivedCount > 0) { receivedBadge.textContent = receivedCount; receivedBadge.classList.remove('hidden'); }
+        else { receivedBadge.classList.add('hidden'); }
+
         if (!list.length) {
-          var emptyMsg = 'No active orders · لا توجد طلبات نشطة';
-          if (currentTab === 'done') emptyMsg = 'No completed orders yet · لا توجد طلبات مكتملة';
+          var emptyMsg = 'No new orders · لا توجد طلبات جديدة';
+          if (currentTab === 'received') emptyMsg = 'No received orders · لا توجد طلبات مستلمة';
+          else if (currentTab === 'done') emptyMsg = 'No completed orders yet · لا توجد طلبات مكتملة';
           else if (currentTab === 'cancelled') emptyMsg = 'No cancelled orders · لا توجد طلبات ملغاة';
           ordersEl.innerHTML = '<div class="empty">' + emptyMsg + '</div>';
           return;
@@ -544,11 +553,13 @@
       function selectTab(tab) {
         currentTab = tab;
         tabActive.classList.toggle('active', tab === 'active');
+        tabReceived.classList.toggle('active', tab === 'received');
         tabDone.classList.toggle('active', tab === 'done');
         tabCancelled.classList.toggle('active', tab === 'cancelled');
         render();
       }
       tabActive.addEventListener('click', function () { selectTab('active'); });
+      tabReceived.addEventListener('click', function () { selectTab('received'); });
       tabDone.addEventListener('click', function () { selectTab('done'); });
       tabCancelled.addEventListener('click', function () { selectTab('cancelled'); });
 
