@@ -11,6 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
+  <script src="products-data.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -341,6 +342,25 @@
     }
     .add-btn:active { transform: scale(0.97); }
     .add-btn.added { background: #6b8a5f; }
+
+    /* sold-out product (visible but not orderable) */
+    .card.soldout .card-img,
+    .card.soldout .card-name,
+    .card.soldout .card-price,
+    .card.soldout .card-desc { opacity: 0.4; filter: grayscale(0.35); }
+    .soldout-badge {
+      margin-top: 8px;
+      width: 100%;
+      padding: 9px 10px;
+      background: rgba(192,57,43,0.1);
+      color: #c0392b;
+      border: 1px solid rgba(192,57,43,0.25);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-align: center;
+    }
 
     /* inline stepper that replaces the add button */
     .card-stepper {
@@ -752,152 +772,18 @@
     </div>
   </div>
 
-  <!-- PIZZAS -->
+  <!-- PIZZAS (rendered from products-data.js / Firestore) -->
   <section>
     <h2 class="section-title">Pizzas</h2>
-    <div class="grid">
-
-      <div class="card">
-        <img class="card-img" src="menu-images/margherita.png" alt="Margherita" />
-        <div class="card-body">
-          <div class="card-header">
-            <span class="card-name">Margherita</span>
-            <span class="card-price">54 QAR</span>
-          </div>
-          <p class="card-desc">Fresh mozzarella · tomato sauce · fresh basil</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <img class="card-img" src="menu-images/chicken-buffalo.png" alt="Chicken Buffalo" />
-        <div class="card-body">
-          <div class="card-header">
-            <span class="card-name">Chicken Buffalo</span>
-            <span class="card-price">54 QAR</span>
-          </div>
-          <p class="card-desc">Buffalo chicken · cheese · ranch sauce</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <img class="card-img" src="menu-images/burrata-honey.png" alt="Burrata &amp; Honey" />
-        <div class="card-body">
-          <div class="card-header">
-            <span class="card-name">Burrata & Honey</span>
-            <span class="card-price">64 QAR</span>
-          </div>
-          <p class="card-desc">Burrata cheese · honey · fresh rocca</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <img class="card-img" src="menu-images/pepperoni.png" alt="Pepperoni" />
-        <div class="card-body">
-          <div class="card-header">
-            <span class="card-name">Pepperoni</span>
-            <span class="card-price">54 QAR</span>
-          </div>
-          <p class="card-desc">Pepperoni · cheese</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <img class="card-img" src="menu-images/lemoncillo.png" alt="Lemoncillo" />
-        <div class="card-body">
-          <div class="card-header">
-            <span class="card-name">Lemoncillo</span>
-            <span class="card-price">64 QAR</span>
-          </div>
-          <p class="card-desc">Fresh lemon · cheese · fresh basil</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <img class="card-img" src="menu-images/truffle.png" alt="Truffle" />
-        <div class="card-body">
-          <div class="card-header">
-            <span class="card-name">Truffle</span>
-            <span class="card-price">64 QAR</span>
-          </div>
-          <p class="card-desc">Truffle paste · cheese · fresh rocca</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <img class="card-img" src="menu-images/bbq-brisket.png" alt="BBQ Brisket" />
-        <div class="card-body">
-          <div class="card-header">
-            <span class="card-name">BBQ Brisket</span>
-            <span class="card-price">64 QAR</span>
-          </div>
-          <p class="card-desc">Beef brisket · cheese · BBQ ranch sauce</p>
-        </div>
-      </div>
-
-    </div>
+    <div class="grid" id="grid-pizzas"></div>
   </section>
 
-  <!-- SIDES -->
+  <!-- SIDES (cards rendered from products-data.js / Firestore; Fries stays static) -->
   <section>
     <h2 class="section-title">Sides</h2>
-    <div class="grid">
+    <div class="grid" id="grid-sides">
 
-      <div class="card">
-        <img class="card-img" src="menu-images/bechamel-bites.png" alt="Bechamel Bites" />
-        <div class="card-body">
-          <div class="card-header">
-            <span class="card-name">Bechamel Bites</span>
-            <span class="card-price">28 QAR</span>
-          </div>
-          <p class="card-desc">Bechamel · cheese · beef bacon jam</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <img class="card-img" src="menu-images/pannochie-fritte.png" alt="Pannochie Fritte" />
-        <div class="card-body">
-          <div class="card-header">
-            <span class="card-name">Pannochie Fritte</span>
-            <span class="card-price">28 QAR</span>
-          </div>
-          <p class="card-desc">Corn on cob · parmesan cheese · cajun spice</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <img class="card-img" src="menu-images/jalapeno-poppers.png" alt="Jalapeno Poppers" />
-        <div class="card-body">
-          <div class="card-header">
-            <span class="card-name">Jalapeno Poppers</span>
-            <span class="card-price">28 QAR</span>
-          </div>
-          <p class="card-desc">Fresh jalapeño · mixed cheese</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <img class="card-img" src="menu-images/arancini.png" alt="Arancini" />
-        <div class="card-body">
-          <div class="card-header">
-            <span class="card-name">Arancini</span>
-            <span class="card-price">28 QAR</span>
-          </div>
-          <p class="card-desc">Risotto · chicken · mushroom</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <img class="card-img" src="menu-images/brisket-croquettes.png" alt="Brisket Croquettes" />
-        <div class="card-body">
-          <div class="card-header">
-            <span class="card-name">Brisket Croquettes</span>
-            <span class="card-price">38 QAR</span>
-          </div>
-          <p class="card-desc">Beef brisket · cheese · BBQ honey</p>
-        </div>
-      </div>
-
-      <div class="card">
+      <div class="card" data-static="1">
         <img class="card-img" src="menu-images/fries.png" alt="Fries" />
         <div class="card-body">
           <div class="card-header">
@@ -1280,14 +1166,28 @@
         });
       });
 
-      /* inject add button + inline stepper for single-price cards */
-      document.querySelectorAll('section .card').forEach(function (card) {
-        var nameEl = card.querySelector('.card-name');
-        var priceEl = card.querySelector('.card-header .card-price');
-        if (!nameEl || !priceEl) return; // skip cards without a single price (e.g. Fries)
-        var name = nameEl.textContent.trim();
-        var price = parsePrice(priceEl.textContent);
+      /* ── PRODUCTS (rendered from Firestore, falling back to products-data.js) ── */
+      var dynamicNames = [];
+
+      function bindProductCard(card, product) {
         var body = card.querySelector('.card-body');
+        var img = card.querySelector('.card-img');
+        if (img) {
+          img.addEventListener('click', function () { open(img.src, img.alt || ''); });
+        }
+        var name = (product.name || '').trim();
+
+        // Sold out: product stays visible but cannot be ordered.
+        if (product.available === false) {
+          card.classList.add('soldout');
+          var badge = document.createElement('div');
+          badge.className = 'soldout-badge';
+          badge.textContent = 'Sold Out · نفذت الكمية';
+          body.appendChild(badge);
+          return;
+        }
+
+        var price = Number(product.price) || 0;
 
         var btn = document.createElement('button');
         btn.className = 'add-btn';
@@ -1315,10 +1215,84 @@
             stepper.style.display = 'none';
           }
         };
+        dynamicNames.push(name);
 
         body.appendChild(btn);
         body.appendChild(stepper);
-      });
+      }
+
+      function buildProductCard(product) {
+        var card = document.createElement('div');
+        card.className = 'card';
+        card.setAttribute('data-dynamic', '1');
+
+        var img = document.createElement('img');
+        img.className = 'card-img';
+        img.src = product.imageUrl || 'bruno-logo.png';
+        img.alt = product.name || '';
+        card.appendChild(img);
+
+        var body = document.createElement('div');
+        body.className = 'card-body';
+
+        var header = document.createElement('div');
+        header.className = 'card-header';
+        var nameEl = document.createElement('span');
+        nameEl.className = 'card-name';
+        nameEl.textContent = product.name || '';
+        header.appendChild(nameEl);
+        var priceEl = document.createElement('span');
+        priceEl.className = 'card-price';
+        priceEl.textContent = (Number(product.price) || 0) + ' QAR';
+        header.appendChild(priceEl);
+        body.appendChild(header);
+
+        if (product.desc) {
+          var descEl = document.createElement('p');
+          descEl.className = 'card-desc';
+          descEl.textContent = product.desc;
+          body.appendChild(descEl);
+        }
+
+        card.appendChild(body);
+        bindProductCard(card, product);
+        return card;
+      }
+
+      function renderProducts(list) {
+        // remove previously rendered dynamic cards + their cart hooks
+        dynamicNames.forEach(function (n) { delete cardUpdaters[n]; });
+        dynamicNames = [];
+        document.querySelectorAll('.card[data-dynamic="1"]').forEach(function (c) { c.remove(); });
+
+        var cats = window.PRODUCT_CATEGORIES || [];
+        cats.forEach(function (cat) {
+          var grid = document.getElementById('grid-' + cat.key);
+          if (!grid) return;
+          var items = list.filter(function (p) { return (p.category || '') === cat.key; })
+            .sort(function (a, b) { return (a.sortOrder || 0) - (b.sortOrder || 0); });
+          var anchor = grid.querySelector('[data-static="1"]');
+          items.forEach(function (p) {
+            var card = buildProductCard(p);
+            if (anchor) grid.insertBefore(card, anchor);
+            else grid.appendChild(card);
+          });
+        });
+        refresh();
+      }
+
+      function loadProducts() {
+        var fallback = (window.MENU_PRODUCTS_DEFAULT || []).slice();
+        renderProducts(fallback); // instant paint + offline fallback
+        if (!db) return;
+        db.collection(window.PRODUCTS_COLLECTION || 'products').get()
+          .then(function (snap) {
+            var list = [];
+            snap.forEach(function (doc) { var d = doc.data(); d.id = doc.id; list.push(d); });
+            if (list.length) renderProducts(list); // replace fallback with live data
+          })
+          .catch(function () { /* keep fallback */ });
+      }
 
       /* inject mini add button + inline stepper for option rows (Fries / Drinks) */
       document.querySelectorAll('.opt-row').forEach(function (row) {
@@ -1465,6 +1439,9 @@
         var btn = row.querySelector('.choose-btn');
         if (btn) btn.addEventListener('click', function () { openChooser(key); });
       });
+
+      /* render product cards (from Firestore, falling back to defaults) */
+      loadProducts();
     })();
   </script>
 

@@ -12,7 +12,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="firebase-config.js"></script>
+  <script src="products-data.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -272,6 +274,145 @@
       font-size: 13px;
       line-height: 1.6;
     }
+    /* ── PRODUCTS MANAGEMENT ── */
+    .products-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 14px 16px 80px;
+    }
+    .products-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .pbtn {
+      border: none;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .pbtn-primary { background: var(--green); color: #fff; }
+    .pbtn-ghost { background: #fff; color: var(--green); border: 1.5px solid rgba(61,90,56,0.3); }
+    .pbtn-danger { background: #fff; color: var(--red); border: 1.5px solid rgba(192,57,43,0.4); }
+    .pbtn:active { transform: scale(0.98); }
+    .pbtn:disabled { opacity: 0.6; cursor: default; }
+
+    .pcat-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--green);
+      margin: 18px 0 8px;
+    }
+    .prow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      box-shadow: 0 4px 16px rgba(61,90,56,0.07);
+      margin-bottom: 10px;
+    }
+    .prow.soldout { opacity: 0.65; }
+    .prow-img {
+      width: 52px; height: 52px;
+      border-radius: 9px;
+      object-fit: cover;
+      background: var(--green-faint);
+      flex-shrink: 0;
+    }
+    .prow-info { flex: 1; min-width: 0; }
+    .prow-name { font-size: 14px; font-weight: 600; color: var(--green); }
+    .prow-meta { font-size: 12px; color: var(--green-muted); margin-top: 2px; }
+    .prow-soldout-tag {
+      display: inline-block;
+      background: rgba(192,57,43,0.12);
+      color: var(--red);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 2px 7px;
+      border-radius: 20px;
+      margin-left: 6px;
+    }
+    .prow-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .iconbtn {
+      border: none;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--green-faint);
+      color: var(--green);
+    }
+    .iconbtn.warn { background: rgba(185,130,31,0.16); color: var(--amber); }
+    .iconbtn.danger { background: rgba(192,57,43,0.1); color: var(--red); }
+    .iconbtn:active { transform: scale(0.95); }
+
+    /* product form */
+    .pform {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px 16px;
+      box-shadow: 0 4px 16px rgba(61,90,56,0.08);
+      margin-bottom: 16px;
+    }
+    .pform h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .pfield { margin-bottom: 12px; }
+    .pfield label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--green-muted);
+      margin-bottom: 5px;
+    }
+    .pfield input[type="text"],
+    .pfield input[type="number"],
+    .pfield input[type="url"],
+    .pfield textarea,
+    .pfield select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1.5px solid rgba(61,90,56,0.3);
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--green);
+      outline: none;
+      background: #fff;
+    }
+    .pfield input:focus, .pfield textarea:focus, .pfield select:focus { border-color: var(--green); }
+    .pfield textarea { resize: vertical; min-height: 56px; }
+    .pfield-row { display: flex; gap: 10px; }
+    .pfield-row .pfield { flex: 1; }
+    .pform-preview {
+      width: 100%;
+      max-height: 180px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: var(--green-faint);
+      margin-top: 8px;
+      display: none;
+    }
+    .pcheck { display: flex; align-items: center; gap: 8px; }
+    .pcheck input { width: 18px; height: 18px; }
+    .pcheck label { margin: 0; font-size: 13px; color: var(--green); font-weight: 500; }
+    .pform-actions { display: flex; gap: 8px; margin-top: 6px; }
+    .pform-actions .pbtn { flex: 1; }
+    .pform-err { color: var(--red); font-size: 12px; min-height: 16px; margin-top: 8px; }
+    .pupload-hint { font-size: 11px; color: var(--green-muted); margin-top: 5px; }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -307,11 +448,61 @@
     <div class="tabs">
       <div class="tab active" data-tab="active" id="tabActive">Active · النشطة <span class="badge hidden" id="activeBadge">0</span></div>
       <div class="tab" data-tab="received" id="tabReceived">Received · المستلمة <span class="badge hidden" id="receivedBadge">0</span></div>
-      <div class="tab" data-tab="done" id="tabDone">Completed · المكتملة</div>
-      <div class="tab" data-tab="cancelled" id="tabCancelled">Cancelled · ملغي</div>
+      <div class="tab" data-tab="done" id="tabDone">Completed · المكتملة <span class="badge hidden" id="doneBadge">0</span></div>
+      <div class="tab" data-tab="cancelled" id="tabCancelled">Cancelled · ملغي <span class="badge hidden" id="cancelledBadge">0</span></div>
+      <div class="tab" data-tab="products" id="tabProducts">Products · المنتجات</div>
     </div>
 
     <div class="orders" id="orders"></div>
+
+    <div class="products-wrap hidden" id="productsView">
+      <div class="products-toolbar">
+        <button class="pbtn pbtn-primary" id="addProductBtn">＋ Add product · إضافة منتج</button>
+        <button class="pbtn pbtn-ghost" id="seedBtn">⬇ Import current menu · استيراد المنيو الحالي</button>
+      </div>
+
+      <!-- add / edit form -->
+      <div class="pform hidden" id="productForm">
+        <h3 id="pformTitle">Add product · إضافة منتج</h3>
+        <input type="hidden" id="pfId" />
+        <div class="pfield">
+          <label for="pfName">Name · الاسم</label>
+          <input type="text" id="pfName" placeholder="e.g. Margherita · مارغريتا" />
+        </div>
+        <div class="pfield-row">
+          <div class="pfield">
+            <label for="pfPrice">Price (QAR) · السعر</label>
+            <input type="number" id="pfPrice" inputmode="decimal" min="0" step="1" placeholder="54" />
+          </div>
+          <div class="pfield">
+            <label for="pfCategory">Category · التصنيف</label>
+            <select id="pfCategory"></select>
+          </div>
+        </div>
+        <div class="pfield">
+          <label for="pfDesc">Description · الوصف</label>
+          <textarea id="pfDesc" placeholder="Fresh mozzarella · tomato sauce"></textarea>
+        </div>
+        <div class="pfield">
+          <label for="pfImageFile">Image · الصورة</label>
+          <input type="file" id="pfImageFile" accept="image/*" />
+          <div class="pupload-hint">Upload a photo from your phone, or paste an image link below · ارفع صورة من جوالك أو الصق رابط صورة بالأسفل</div>
+          <input type="url" id="pfImageUrl" placeholder="https://… (optional · اختياري)" style="margin-top:8px;" />
+          <img class="pform-preview" id="pfPreview" alt="" />
+        </div>
+        <div class="pfield pcheck">
+          <input type="checkbox" id="pfAvailable" checked />
+          <label for="pfAvailable">Available · متوفر (uncheck = Sold Out · نفذت الكمية)</label>
+        </div>
+        <div class="pform-err" id="pformErr"></div>
+        <div class="pform-actions">
+          <button class="pbtn pbtn-primary" id="pfSave">Save · حفظ</button>
+          <button class="pbtn pbtn-ghost" id="pfCancel">Cancel · إلغاء</button>
+        </div>
+      </div>
+
+      <div id="productsList"></div>
+    </div>
   </div>
 
   <script>
@@ -330,6 +521,8 @@
       var tabCancelled = document.getElementById('tabCancelled');
       var activeBadge = document.getElementById('activeBadge');
       var receivedBadge = document.getElementById('receivedBadge');
+      var doneBadge = document.getElementById('doneBadge');
+      var cancelledBadge = document.getElementById('cancelledBadge');
       var soundToggle = document.getElementById('soundToggle');
       var clearBtn = document.getElementById('clearBtn');
 
@@ -451,16 +644,24 @@
           if (currentTab === 'received') return o.status === 'received';
           if (currentTab === 'done') return o.status === 'done';
           if (currentTab === 'cancelled') return o.status === 'cancelled';
-          return o.status === 'new';
+          return o.status !== 'received' && o.status !== 'done' && o.status !== 'cancelled';
         });
 
-        var activeCount = orders.filter(function (o) { return o.status === 'new'; }).length;
+        var activeCount = orders.filter(function (o) { return o.status !== 'received' && o.status !== 'done' && o.status !== 'cancelled'; }).length;
         if (activeCount > 0) { activeBadge.textContent = activeCount; activeBadge.classList.remove('hidden'); }
         else { activeBadge.classList.add('hidden'); }
 
         var receivedCount = orders.filter(function (o) { return o.status === 'received'; }).length;
         if (receivedCount > 0) { receivedBadge.textContent = receivedCount; receivedBadge.classList.remove('hidden'); }
         else { receivedBadge.classList.add('hidden'); }
+
+        var doneCount = orders.filter(function (o) { return o.status === 'done'; }).length;
+        if (doneCount > 0) { doneBadge.textContent = doneCount; doneBadge.classList.remove('hidden'); }
+        else { doneBadge.classList.add('hidden'); }
+
+        var cancelledCount = orders.filter(function (o) { return o.status === 'cancelled'; }).length;
+        if (cancelledCount > 0) { cancelledBadge.textContent = cancelledCount; cancelledBadge.classList.remove('hidden'); }
+        else { cancelledBadge.classList.add('hidden'); }
 
         if (!list.length) {
           var emptyMsg = 'No new orders · لا توجد طلبات جديدة';
@@ -480,18 +681,17 @@
 
           var cancelBtn = '<button class="act-btn act-cancel" data-act="cancel" data-id="' + esc(o.id) + '">✕ Cancel · إلغاء</button>';
           var actions = '';
-          if (o.status === 'new') {
-            actions = '<button class="act-btn act-received" data-act="received" data-id="' + esc(o.id) + '">✓ Received · استلمت</button>' +
-                      '<button class="act-btn act-done" data-act="done" data-id="' + esc(o.id) + '">✓✓ Done · تم الانتهاء</button>' +
-                      cancelBtn;
-          } else if (o.status === 'received') {
+          if (o.status === 'received') {
             actions = '<button class="act-btn act-done" data-act="done" data-id="' + esc(o.id) + '">✓✓ Done · تم الانتهاء</button>' +
                       cancelBtn;
           } else if (o.status === 'done') {
             actions = '<button class="act-btn act-reopen" data-act="reopen" data-id="' + esc(o.id) + '">↩ Reopen · إعادة فتح</button>' +
                       cancelBtn;
-          } else {
+          } else if (o.status === 'cancelled') {
             actions = '<button class="act-btn act-restore" data-act="restore" data-id="' + esc(o.id) + '">↩ Restore · استعادة</button>';
+          } else {
+            actions = '<button class="act-btn act-received" data-act="received" data-id="' + esc(o.id) + '">✓ Received · استلمت</button>' +
+                      cancelBtn;
           }
 
           var timingParts = [];
@@ -556,7 +756,15 @@
         tabReceived.classList.toggle('active', tab === 'received');
         tabDone.classList.toggle('active', tab === 'done');
         tabCancelled.classList.toggle('active', tab === 'cancelled');
-        render();
+        tabProducts.classList.toggle('active', tab === 'products');
+        if (tab === 'products') {
+          ordersEl.classList.add('hidden');
+          productsView.classList.remove('hidden');
+        } else {
+          productsView.classList.add('hidden');
+          ordersEl.classList.remove('hidden');
+          render();
+        }
       }
       tabActive.addEventListener('click', function () { selectTab('active'); });
       tabReceived.addEventListener('click', function () { selectTab('received'); });
@@ -588,6 +796,266 @@
       }
       function stopListening() { if (unsub) { unsub(); unsub = null; } orders = []; knownNewIds = {}; firstLoad = true; }
 
+      /* ── PRODUCTS MANAGEMENT ── */
+      var PCOLL = window.PRODUCTS_COLLECTION || 'products';
+      var CATS = window.PRODUCT_CATEGORIES || [];
+      var storage = firebase.storage();
+
+      var tabProducts = document.getElementById('tabProducts');
+      tabProducts.addEventListener('click', function () { selectTab('products'); });
+      var productsView = document.getElementById('productsView');
+      var productsList = document.getElementById('productsList');
+      var addProductBtn = document.getElementById('addProductBtn');
+      var seedBtn = document.getElementById('seedBtn');
+      var productForm = document.getElementById('productForm');
+      var pformTitle = document.getElementById('pformTitle');
+      var pfId = document.getElementById('pfId');
+      var pfName = document.getElementById('pfName');
+      var pfPrice = document.getElementById('pfPrice');
+      var pfCategory = document.getElementById('pfCategory');
+      var pfDesc = document.getElementById('pfDesc');
+      var pfImageFile = document.getElementById('pfImageFile');
+      var pfImageUrl = document.getElementById('pfImageUrl');
+      var pfPreview = document.getElementById('pfPreview');
+      var pfAvailable = document.getElementById('pfAvailable');
+      var pformErr = document.getElementById('pformErr');
+      var pfSave = document.getElementById('pfSave');
+      var pfCancel = document.getElementById('pfCancel');
+
+      var products = [];
+      var unsubProducts = null;
+      var pickedFile = null;
+
+      CATS.forEach(function (c) {
+        var opt = document.createElement('option');
+        opt.value = c.key;
+        opt.textContent = c.title;
+        pfCategory.appendChild(opt);
+      });
+
+      function catTitle(key) {
+        for (var i = 0; i < CATS.length; i++) { if (CATS[i].key === key) return CATS[i].title; }
+        return key || 'Other · أخرى';
+      }
+
+      function productRow(p) {
+        var soldout = p.available === false;
+        var img = p.imageUrl ? esc(p.imageUrl) : 'bruno-logo.png';
+        return '<div class="prow ' + (soldout ? 'soldout' : '') + '">' +
+          '<img class="prow-img" src="' + img + '" alt="" onerror="this.src=\'bruno-logo.png\'" />' +
+          '<div class="prow-info">' +
+            '<div class="prow-name">' + esc(p.name) + (soldout ? '<span class="prow-soldout-tag">Sold Out · نفذت</span>' : '') + '</div>' +
+            '<div class="prow-meta">' + esc(String(Number(p.price) || 0)) + ' QAR · ' + esc(catTitle(p.category)) + '</div>' +
+          '</div>' +
+          '<div class="prow-actions">' +
+            '<button class="iconbtn" data-pact="edit" data-id="' + esc(p.id) + '">✎ Edit · تعديل</button>' +
+            '<button class="iconbtn warn" data-pact="toggle" data-id="' + esc(p.id) + '">' + (soldout ? '✓ Available · متوفر' : '⛔ Sold Out · سولد اوت') + '</button>' +
+            '<button class="iconbtn danger" data-pact="delete" data-id="' + esc(p.id) + '">🗑</button>' +
+          '</div>' +
+        '</div>';
+      }
+
+      function renderProductsList() {
+        if (!products.length) {
+          productsList.innerHTML = '<div class="empty">No products in the database yet · لا توجد منتجات في قاعدة البيانات بعد.<br>Tap "Import current menu" to load your items. · اضغط "استيراد المنيو الحالي" لتحميل أصنافك.</div>';
+          return;
+        }
+        var html = '';
+        var shown = {};
+        CATS.forEach(function (cat) {
+          var items = products.filter(function (p) { return (p.category || '') === cat.key; })
+            .sort(function (a, b) { return (a.sortOrder || 0) - (b.sortOrder || 0); });
+          if (!items.length) return;
+          html += '<div class="pcat-title">' + esc(cat.title) + '</div>';
+          items.forEach(function (p) { shown[p.id] = true; html += productRow(p); });
+        });
+        var others = products.filter(function (p) { return !shown[p.id]; });
+        if (others.length) {
+          html += '<div class="pcat-title">Other · أخرى</div>';
+          others.forEach(function (p) { html += productRow(p); });
+        }
+        productsList.innerHTML = html;
+      }
+
+      function openForm(product) {
+        pickedFile = null;
+        pformErr.textContent = '';
+        pfImageFile.value = '';
+        if (product) {
+          pformTitle.textContent = 'Edit product · تعديل منتج';
+          pfId.value = product.id;
+          pfName.value = product.name || '';
+          pfPrice.value = (product.price != null ? product.price : '');
+          pfCategory.value = product.category || (CATS[0] && CATS[0].key) || '';
+          pfDesc.value = product.desc || '';
+          pfImageUrl.value = product.imageUrl || '';
+          pfAvailable.checked = product.available !== false;
+          if (product.imageUrl) { pfPreview.src = product.imageUrl; pfPreview.style.display = 'block'; }
+          else { pfPreview.style.display = 'none'; pfPreview.src = ''; }
+        } else {
+          pformTitle.textContent = 'Add product · إضافة منتج';
+          pfId.value = '';
+          pfName.value = '';
+          pfPrice.value = '';
+          pfCategory.value = (CATS[0] && CATS[0].key) || '';
+          pfDesc.value = '';
+          pfImageUrl.value = '';
+          pfAvailable.checked = true;
+          pfPreview.style.display = 'none';
+          pfPreview.src = '';
+        }
+        productForm.classList.remove('hidden');
+        productForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      function closeForm() { productForm.classList.add('hidden'); pickedFile = null; pfImageFile.value = ''; }
+
+      addProductBtn.addEventListener('click', function () { openForm(null); });
+      pfCancel.addEventListener('click', closeForm);
+
+      pfImageFile.addEventListener('change', function () {
+        var f = pfImageFile.files && pfImageFile.files[0];
+        pickedFile = f || null;
+        if (f) {
+          var reader = new FileReader();
+          reader.onload = function (e) { pfPreview.src = e.target.result; pfPreview.style.display = 'block'; };
+          reader.readAsDataURL(f);
+        }
+      });
+      pfImageUrl.addEventListener('input', function () {
+        if (!pickedFile && pfImageUrl.value.trim()) { pfPreview.src = pfImageUrl.value.trim(); pfPreview.style.display = 'block'; }
+      });
+
+      function nextSortOrder(category) {
+        var max = 0;
+        products.forEach(function (p) {
+          if ((p.category || '') === category && (p.sortOrder || 0) > max) max = p.sortOrder;
+        });
+        return max + 1;
+      }
+
+      pfSave.addEventListener('click', function () {
+        pformErr.textContent = '';
+        var name = pfName.value.trim();
+        var price = parseFloat(pfPrice.value);
+        var category = pfCategory.value;
+        if (!name) { pformErr.textContent = 'Please enter a name · الرجاء إدخال الاسم'; return; }
+        if (isNaN(price) || price < 0) { pformErr.textContent = 'Please enter a valid price · الرجاء إدخال سعر صحيح'; return; }
+
+        pfSave.disabled = true;
+        var origLabel = pfSave.textContent;
+        pfSave.textContent = 'Saving… · جارٍ الحفظ…';
+
+        function fail(msg) { pfSave.disabled = false; pfSave.textContent = origLabel; pformErr.textContent = msg; }
+
+        function persist(imageUrl) {
+          var id = pfId.value;
+          var data = {
+            name: name,
+            price: price,
+            category: category,
+            desc: pfDesc.value.trim(),
+            imageUrl: imageUrl || '',
+            available: pfAvailable.checked,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+          var op;
+          if (id) {
+            op = db.collection(PCOLL).doc(id).update(data);
+          } else {
+            data.sortOrder = nextSortOrder(category);
+            data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            op = db.collection(PCOLL).add(data);
+          }
+          op.then(function () {
+            pfSave.disabled = false;
+            pfSave.textContent = origLabel;
+            closeForm();
+          }).catch(function (e) { fail('Could not save · تعذّر الحفظ: ' + e.message); });
+        }
+
+        if (pickedFile) {
+          var ext = (pickedFile.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+          var path = 'product-images/' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+          storage.ref().child(path).put(pickedFile).then(function (snap) {
+            return snap.ref.getDownloadURL();
+          }).then(function (url) {
+            persist(url);
+          }).catch(function (e) {
+            fail('Image upload failed · فشل رفع الصورة: ' + e.message + '. Make sure Firebase Storage is enabled. · تأكد من تفعيل Firebase Storage.');
+          });
+        } else {
+          persist(pfImageUrl.value.trim());
+        }
+      });
+
+      productsList.addEventListener('click', function (e) {
+        var b = e.target.closest('button');
+        if (!b) return;
+        var id = b.getAttribute('data-id');
+        var act = b.getAttribute('data-pact');
+        if (!id || !act) return;
+        var prod = products.filter(function (p) { return p.id === id; })[0];
+        if (!prod) return;
+
+        if (act === 'edit') { openForm(prod); return; }
+        if (act === 'toggle') {
+          b.disabled = true;
+          db.collection(PCOLL).doc(id).update({
+            available: prod.available === false,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }).catch(function () { b.disabled = false; alert('Could not update · تعذّر التحديث'); });
+          return;
+        }
+        if (act === 'delete') {
+          if (!confirm('Delete "' + prod.name + '"? Past orders are NOT affected. · حذف "' + prod.name + '"؟ الطلبات السابقة لن تتأثر.')) return;
+          b.disabled = true;
+          db.collection(PCOLL).doc(id).delete().catch(function () { b.disabled = false; alert('Could not delete · تعذّر الحذف'); });
+        }
+      });
+
+      seedBtn.addEventListener('click', function () {
+        var defaults = window.MENU_PRODUCTS_DEFAULT || [];
+        if (!defaults.length) { alert('No default products found · لا توجد منتجات افتراضية'); return; }
+        if (products.length) {
+          if (!confirm('You already have products. Import will ADD the menu items again (possible duplicates). Continue? · لديك منتجات بالفعل، الاستيراد سيضيف الأصناف مرة أخرى (قد تتكرر). متابعة؟')) return;
+        } else {
+          if (!confirm('Import the current menu into the database? · استيراد المنيو الحالي إلى قاعدة البيانات؟')) return;
+        }
+        seedBtn.disabled = true;
+        var orig = seedBtn.textContent;
+        seedBtn.textContent = 'Importing… · جارٍ الاستيراد…';
+        var batch = db.batch();
+        defaults.forEach(function (p) {
+          var ref = db.collection(PCOLL).doc();
+          batch.set(ref, {
+            name: p.name, price: p.price, category: p.category, desc: p.desc || '',
+            imageUrl: p.imageUrl || '', available: p.available !== false, sortOrder: p.sortOrder || 0,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+        batch.commit().then(function () {
+          seedBtn.disabled = false;
+          seedBtn.textContent = orig;
+        }).catch(function (e) {
+          seedBtn.disabled = false;
+          seedBtn.textContent = orig;
+          alert('Import failed · فشل الاستيراد: ' + e.message);
+        });
+      });
+
+      function startProductsListening() {
+        if (unsubProducts) return;
+        unsubProducts = db.collection(PCOLL).onSnapshot(function (snap) {
+          var next = [];
+          snap.forEach(function (doc) { var d = doc.data(); d.id = doc.id; next.push(d); });
+          products = next;
+          renderProductsList();
+        }, function (err) {
+          productsList.innerHTML = '<div class="config-warn">Could not load products · تعذّر تحميل المنتجات.<br>' + esc(err.message) + '</div>';
+        });
+      }
+      function stopProductsListening() { if (unsubProducts) { unsubProducts(); unsubProducts = null; } products = []; }
+
       /* ── AUTH ── */
       function doLogin() {
         loginErr.textContent = '';
@@ -611,8 +1079,10 @@
           loginWrap.classList.add('hidden');
           dash.classList.remove('hidden');
           startListening();
+          startProductsListening();
         } else {
           stopListening();
+          stopProductsListening();
           dash.classList.add('hidden');
           loginWrap.classList.remove('hidden');
           loginBtn.disabled = false;
