@@ -551,34 +551,86 @@
       var orders = [];
       var unsub = null;
       var soundOn = true;
-      var knownNewIds = {};
-      var firstLoad = true;
 
-      /* ── new-order chime via WebAudio (no asset needed) ── */
+      /* ── repeating new-order alarm via WebAudio (no asset needed) ──
+         Keeps ringing while any unreceived ("new") order exists, and stops
+         automatically once none remain. Works on iPhone/iPad after one tap. */
       var audioCtx = null;
-      function chime() {
-        if (!soundOn) return;
+      var audioArmed = false;
+      var alarmTimer = null;
+
+      function ensureAudio() {
         try {
           audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
+          audioArmed = true;
+        } catch (e) { /* ignore */ }
+      }
+
+      function playBeep() {
+        if (!audioCtx) return;
+        try {
+          if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
           var o = audioCtx.createOscillator();
           var g = audioCtx.createGain();
           o.connect(g); g.connect(audioCtx.destination);
           o.type = 'sine';
-          o.frequency.setValueAtTime(880, audioCtx.currentTime);
-          o.frequency.setValueAtTime(1175, audioCtx.currentTime + 0.13);
-          g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-          g.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 0.02);
-          g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
-          o.start();
-          o.stop(audioCtx.currentTime + 0.42);
+          var t = audioCtx.currentTime;
+          o.frequency.setValueAtTime(880, t);
+          o.frequency.setValueAtTime(1175, t + 0.13);
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(0.3, t + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+          o.start(t);
+          o.stop(t + 0.42);
         } catch (e) { /* ignore */ }
       }
+
+      function anyNewOrders() {
+        for (var i = 0; i < orders.length; i++) {
+          if (orders[i].status === 'new') return true;
+        }
+        return false;
+      }
+
+      function startAlarm() {
+        if (alarmTimer) return;
+        playBeep();
+        alarmTimer = setInterval(playBeep, 1400);
+      }
+      function stopAlarm() {
+        if (alarmTimer) { clearInterval(alarmTimer); alarmTimer = null; }
+      }
+
+      /* arm/disarm the looping alarm based on current order state */
+      function updateAlarm() {
+        if (soundOn && audioArmed && anyNewOrders()) startAlarm();
+        else stopAlarm();
+      }
+
+      /* iOS/iPad: unlock audio on the very first user interaction anywhere */
+      function unlockAudioOnce() {
+        ensureAudio();
+        updateAlarm();
+        document.removeEventListener('pointerdown', unlockAudioOnce);
+        document.removeEventListener('touchend', unlockAudioOnce);
+        document.removeEventListener('click', unlockAudioOnce);
+      }
+      document.addEventListener('pointerdown', unlockAudioOnce);
+      document.addEventListener('touchend', unlockAudioOnce);
+      document.addEventListener('click', unlockAudioOnce);
+
+      /* coming back to the tab (mobile app-switch) may suspend audio — resume it */
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden && audioArmed) { ensureAudio(); updateAlarm(); }
+      });
 
       soundToggle.addEventListener('click', function () {
         soundOn = !soundOn;
         soundToggle.textContent = soundOn ? '🔔 On' : '🔕 Off';
         soundToggle.classList.toggle('off', !soundOn);
-        if (soundOn) { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); }
+        if (soundOn) ensureAudio();
+        updateAlarm();
       });
 
       /* ── delete ALL orders (clears the database) ── */
@@ -603,7 +655,6 @@
           }
           return deleteChunk(0);
         }).then(function () {
-          knownNewIds = {};
           clearBtn.disabled = false;
           clearBtn.textContent = origLabel;
         }).catch(function (e) {
@@ -786,26 +837,20 @@
         if (unsub) return;
         unsub = db.collection(COLL).orderBy('createdAt', 'desc').limit(200)
           .onSnapshot(function (snap) {
-            var newArrived = false;
             var next = [];
             snap.forEach(function (doc) {
               var d = doc.data();
               d.id = doc.id;
               next.push(d);
-              if (d.status === 'new' && !knownNewIds[doc.id]) {
-                knownNewIds[doc.id] = true;
-                if (!firstLoad) newArrived = true;
-              }
             });
             orders = next;
-            firstLoad = false;
             render();
-            if (newArrived) chime();
+            updateAlarm();
           }, function (err) {
             ordersEl.innerHTML = '<div class="config-warn">Could not load orders. Check Firestore rules / connection.<br>تعذّر تحميل الطلبات. تحقق من القواعد والاتصال.<br><br>' + esc(err.message) + '</div>';
           });
       }
-      function stopListening() { if (unsub) { unsub(); unsub = null; } orders = []; knownNewIds = {}; firstLoad = true; }
+      function stopListening() { if (unsub) { unsub(); unsub = null; } orders = []; stopAlarm(); }
 
       /* ── PRODUCTS MANAGEMENT ── */
       var PCOLL = window.PRODUCTS_COLLECTION || 'products';
