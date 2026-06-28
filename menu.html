@@ -177,6 +177,23 @@
       line-height: 1.55;
       letter-spacing: 0.02em;
     }
+    .card-note {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 8px;
+      padding: 7px 9px;
+      border: 1px solid rgba(61,90,56,0.22);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: clamp(10px, 2.6vw, 12px);
+      color: var(--green);
+      background: rgba(245,242,236,0.6);
+      resize: none;
+      outline: none;
+    }
+    .card-note::placeholder { color: var(--green-muted); opacity: 0.7; }
+    .card-note:focus { border-color: var(--green); background: #fff; }
+    .card.soldout .card-note { display: none; }
 
     /* ── DRINKS ── */
     .drinks-grid {
@@ -413,70 +430,6 @@
     }
     .mini-add:active { transform: scale(0.92); }
 
-    .choose-btn {
-      margin-left: 10px;
-      padding: 6px 14px;
-      background: var(--green);
-      color: #fff;
-      border: none;
-      border-radius: 20px;
-      font-family: 'Inter', sans-serif;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .choose-btn:active { transform: scale(0.96); }
-
-    /* ── OPTION CHOOSER ── */
-    .chooser-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(61,90,56,0.5);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.25s ease, visibility 0.25s ease;
-      z-index: 1150;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-    }
-    .chooser-overlay.open { opacity: 1; visibility: visible; }
-    .chooser-panel {
-      background: var(--cream);
-      width: 100%;
-      max-width: 480px;
-      max-height: 80vh;
-      border-radius: 18px 18px 0 0;
-      padding: 20px 18px calc(20px + env(safe-area-inset-bottom));
-      display: flex;
-      flex-direction: column;
-      transform: translateY(100%);
-      transition: transform 0.3s ease;
-      overflow: hidden;
-    }
-    .chooser-overlay.open .chooser-panel { transform: translateY(0); }
-    .chooser-list { overflow-y: auto; flex: 1; margin: 4px -2px 0; padding: 0 2px; }
-    .chooser-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      background: #fff;
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin-bottom: 8px;
-    }
-    .chooser-item-name {
-      font-family: 'Playfair Display', serif;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--green);
-    }
-    .chooser-item-price { font-size: 12px; color: var(--green-muted); margin-top: 2px; }
-    .chooser-ctrl { display: flex; align-items: center; flex-shrink: 0; }
-
     /* ── CART BAR ── */
     .cart-bar {
       position: fixed;
@@ -589,6 +542,7 @@
       color: var(--green);
     }
     .cart-item-price { font-size: 11px; color: var(--green-muted); margin-top: 2px; }
+    .cart-item-note { font-size: 11px; color: var(--green); margin-top: 3px; font-style: italic; word-break: break-word; }
     .qty {
       display: flex;
       align-items: center;
@@ -772,65 +726,8 @@
     </div>
   </div>
 
-  <!-- PIZZAS (rendered from products-data.js / Firestore) -->
-  <section>
-    <h2 class="section-title">Pizzas</h2>
-    <div class="grid" id="grid-pizzas"></div>
-  </section>
-
-  <!-- SIDES (cards rendered from products-data.js / Firestore; Fries stays static) -->
-  <section>
-    <h2 class="section-title">Sides</h2>
-    <div class="grid" id="grid-sides">
-
-      <div class="card" data-static="1">
-        <img class="card-img" src="menu-images/fries.png" alt="Fries" />
-        <div class="card-body">
-          <div class="card-header">
-            <span class="card-name">Fries</span>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:5px; margin-top:5px;">
-            <div class="opt-row" data-name="French Fries" data-price="13" style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-size:clamp(10px,2.8vw,12px); color:var(--green);">French Fries</span>
-              <span class="row-flex"><span style="font-size:clamp(10px,2.8vw,12px); font-weight:500; color:var(--green);">13 QAR</span></span>
-            </div>
-            <div style="height:1px; background:rgba(61,90,56,0.08);"></div>
-            <div class="opt-row" data-name="Parmesan Fries" data-price="20" style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-size:clamp(10px,2.8vw,12px); color:var(--green);">Parmesan Fries</span>
-              <span class="row-flex"><span style="font-size:clamp(10px,2.8vw,12px); font-weight:500; color:var(--green);">20 QAR</span></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- DRINKS -->
-  <section>
-    <h2 class="section-title">Drinks</h2>
-    <div class="drinks-grid">
-      <div class="drink-row chooser-row" data-chooser="sodas">
-        <span class="drink-name">Sodas · مشروبات غازية</span>
-        <span class="row-flex"><span class="drink-price">5 QAR</span><button type="button" class="choose-btn">Choose · اختر</button></span>
-      </div>
-      <div class="drink-row opt-row" data-name="Bottled Water" data-price="2">
-        <span class="drink-name">Bottled Water</span>
-        <span class="row-flex"><span class="drink-price">2 QAR</span></span>
-      </div>
-    </div>
-  </section>
-
-  <!-- SAUCES -->
-  <section>
-    <h2 class="section-title">Sauces · الصوصات</h2>
-    <div class="drinks-grid">
-      <div class="drink-row chooser-row" data-chooser="sauces">
-        <span class="drink-name">Sauce · صوص</span>
-        <span class="row-flex"><span class="drink-price">from 2 QAR</span><button type="button" class="choose-btn">Choose · اختر</button></span>
-      </div>
-    </div>
-  </section>
+  <!-- MENU (every section rendered dynamically from products-data.js / Firestore) -->
+  <div id="menu-sections"></div>
 
   <footer>
     Bruno · Doha · @brunopizzza
@@ -841,17 +738,6 @@
       <button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
       <img id="lightboxImg" src="" alt="" />
       <div class="lightbox-cap" id="lightboxCap"></div>
-    </div>
-  </div>
-
-  <div class="chooser-overlay" id="chooserOverlay">
-    <div class="chooser-panel">
-      <div class="cart-head">
-        <span class="cart-title" id="chooserTitle"></span>
-        <button class="cart-x" id="chooserClose" aria-label="Close">&times;</button>
-      </div>
-      <div class="chooser-list" id="chooserList"></div>
-      <button class="ok-btn" id="chooserDone" style="margin-top:14px;">Done · تم</button>
     </div>
   </div>
 
@@ -985,10 +871,6 @@
       var waBtn = document.getElementById('waBtn');
       var cardUpdaters = {}; // item name -> function(qty) to sync inline UI
 
-      function parsePrice(txt) {
-        var m = (txt || '').replace(/,/g, '').match(/[\d.]+/);
-        return m ? parseFloat(m[0]) : 0;
-      }
       function totals() {
         var qty = 0, sum = 0;
         Object.keys(cart).forEach(function (k) {
@@ -997,10 +879,14 @@
         });
         return { qty: qty, sum: sum };
       }
-      function addItem(name, price) {
-        if (!cart[name]) cart[name] = { name: name, price: price, qty: 0 };
+      function addItem(name, price, note) {
+        if (!cart[name]) cart[name] = { name: name, price: price, qty: 0, note: '' };
         cart[name].qty += 1;
+        if (typeof note === 'string') cart[name].note = note.trim();
         refresh();
+      }
+      function setNote(name, note) {
+        if (cart[name]) cart[name].note = (note || '').trim();
       }
       function setQty(name, delta) {
         if (!cart[name]) return;
@@ -1033,6 +919,7 @@
             '<div class="cart-item-info">' +
               '<div class="cart-item-name"></div>' +
               '<div class="cart-item-price">' + it.price + ' QAR × ' + it.qty + ' = ' + (it.price * it.qty) + ' QAR</div>' +
+              (it.note ? '<div class="cart-item-note"></div>' : '') +
             '</div>' +
             '<div class="qty">' +
               '<button data-act="dec" data-key="' + encodeURIComponent(k) + '">&minus;</button>' +
@@ -1042,9 +929,13 @@
           '</div>';
         });
         cartItemsEl.innerHTML = html;
-        // set names safely (avoid HTML injection)
-        var nameEls = cartItemsEl.querySelectorAll('.cart-item-name');
-        keys.forEach(function (k, i) { nameEls[i].textContent = cart[k].name; });
+        // set names + notes safely (avoid HTML injection)
+        var rows = cartItemsEl.querySelectorAll('.cart-item');
+        keys.forEach(function (k, i) {
+          var row = rows[i]; if (!row) return;
+          var nm = row.querySelector('.cart-item-name'); if (nm) nm.textContent = cart[k].name;
+          var nt = row.querySelector('.cart-item-note'); if (nt) nt.textContent = '📝 ' + cart[k].note;
+        });
       }
 
       cartItemsEl.addEventListener('click', function (e) {
@@ -1082,6 +973,7 @@
         Object.keys(cart).forEach(function (k) {
           var it = cart[k];
           lines.push('• ' + it.qty + '× ' + it.name + ' = ' + (it.price * it.qty) + ' QAR');
+          if (it.note) lines.push('   📝 ' + it.note);
         });
         lines.push('━━━━━━━━━━━');
         lines.push('Total · المجموع: ' + t.sum + ' QAR');
@@ -1130,7 +1022,9 @@
         var phone = phoneCountry.value + ' ' + phoneDigits;
 
         var items = Object.keys(cart).map(function (k) {
-          return { name: cart[k].name, qty: cart[k].qty, price: cart[k].price };
+          var it = { name: cart[k].name, qty: cart[k].qty, price: cart[k].price };
+          if (cart[k].note) it.note = cart[k].note;
+          return it;
         });
 
         // Fallback path: if the cloud is not configured, use WhatsApp.
@@ -1166,61 +1060,39 @@
         });
       });
 
-      /* ── PRODUCTS (rendered from Firestore, falling back to products-data.js) ── */
+      /* ── PRODUCTS (rendered dynamically from Firestore, falling back to products-data.js) ── */
       var dynamicNames = [];
+      var sectionsRoot = document.getElementById('menu-sections');
 
-      function bindProductCard(card, product) {
-        var body = card.querySelector('.card-body');
-        var img = card.querySelector('.card-img');
-        if (img) {
-          img.addEventListener('click', function () { open(img.src, img.alt || ''); });
-        }
-        var name = (product.name || '').trim();
-
-        // Sold out: product stays visible but cannot be ordered.
-        if (product.available === false) {
-          card.classList.add('soldout');
-          var badge = document.createElement('div');
-          badge.className = 'soldout-badge';
-          badge.textContent = 'Sold Out · نفذت الكمية';
-          body.appendChild(badge);
-          return;
-        }
-
-        var price = Number(product.price) || 0;
-
-        var btn = document.createElement('button');
-        btn.className = 'add-btn';
-        btn.textContent = 'Add · أضف';
-
-        var stepper = document.createElement('div');
-        stepper.className = 'card-stepper';
-        stepper.style.display = 'none';
-        var dec = document.createElement('button'); dec.innerHTML = '&minus;'; dec.setAttribute('aria-label', 'Decrease');
-        var qtySpan = document.createElement('span'); qtySpan.className = 'step-qty'; qtySpan.textContent = '0';
-        var inc = document.createElement('button'); inc.textContent = '+'; inc.setAttribute('aria-label', 'Increase');
-        stepper.appendChild(dec); stepper.appendChild(qtySpan); stepper.appendChild(inc);
-
-        btn.addEventListener('click', function () { addItem(name, price); });
-        inc.addEventListener('click', function () { setQty(name, 1); });
-        dec.addEventListener('click', function () { setQty(name, -1); });
-
-        cardUpdaters[name] = function (qty) {
-          if (qty > 0) {
-            btn.style.display = 'none';
-            stepper.style.display = 'flex';
-            qtySpan.textContent = qty;
-          } else {
-            btn.style.display = 'block';
-            stepper.style.display = 'none';
-          }
-        };
-        dynamicNames.push(name);
-
-        body.appendChild(btn);
-        body.appendChild(stepper);
+      function catDefsByKey() {
+        var m = {};
+        (window.PRODUCT_CATEGORIES || []).forEach(function (c, i) {
+          m[c.key] = { key: c.key, title: c.title, display: c.display || 'card', order: i };
+        });
+        return m;
       }
 
+      // Build the ordered list of sections from whatever products exist.
+      // Known categories keep their defined order; custom ones come after,
+      // using the title/display stored on the product.
+      function orderedCategories(list) {
+        var defs = catDefsByKey();
+        var present = {};
+        list.forEach(function (p) {
+          var key = p.category || 'other';
+          if (present[key]) return;
+          present[key] = defs[key] || {
+            key: key,
+            title: p.categoryTitle || key,
+            display: p.categoryDisplay || 'card',
+            order: 1000
+          };
+        });
+        return Object.keys(present).map(function (k) { return present[k]; })
+          .sort(function (a, b) { return (a.order - b.order) || a.title.localeCompare(b.title); });
+      }
+
+      // Card style (pizzas, sides, custom photo categories) — includes a note box.
       function buildProductCard(product) {
         var card = document.createElement('div');
         card.className = 'card';
@@ -1230,6 +1102,7 @@
         img.className = 'card-img';
         img.src = product.imageUrl || 'bruno-logo.png';
         img.alt = product.name || '';
+        img.addEventListener('click', function () { open(img.src, img.alt || ''); });
         card.appendChild(img);
 
         var body = document.createElement('div');
@@ -1253,53 +1126,90 @@
           descEl.textContent = product.desc;
           body.appendChild(descEl);
         }
-
         card.appendChild(body);
-        bindProductCard(card, product);
+
+        var name = (product.name || '').trim();
+
+        // Sold out: product stays visible but cannot be ordered.
+        if (product.available === false) {
+          card.classList.add('soldout');
+          var badge = document.createElement('div');
+          badge.className = 'soldout-badge';
+          badge.textContent = 'Sold Out · نفذت الكمية';
+          body.appendChild(badge);
+          return card;
+        }
+
+        var price = Number(product.price) || 0;
+
+        var noteEl = document.createElement('textarea');
+        noteEl.className = 'card-note';
+        noteEl.rows = 1;
+        noteEl.setAttribute('placeholder', 'Note · ملاحظة (optional · اختياري)');
+        if (cart[name] && cart[name].note) noteEl.value = cart[name].note;
+        noteEl.addEventListener('input', function () { setNote(name, noteEl.value); });
+
+        var btn = document.createElement('button');
+        btn.className = 'add-btn';
+        btn.textContent = 'Add · أضف';
+
+        var stepper = document.createElement('div');
+        stepper.className = 'card-stepper';
+        stepper.style.display = 'none';
+        var dec = document.createElement('button'); dec.innerHTML = '&minus;'; dec.setAttribute('aria-label', 'Decrease');
+        var qtySpan = document.createElement('span'); qtySpan.className = 'step-qty'; qtySpan.textContent = '0';
+        var inc = document.createElement('button'); inc.textContent = '+'; inc.setAttribute('aria-label', 'Increase');
+        stepper.appendChild(dec); stepper.appendChild(qtySpan); stepper.appendChild(inc);
+
+        btn.addEventListener('click', function () { addItem(name, price, noteEl.value); });
+        inc.addEventListener('click', function () { setQty(name, 1); });
+        dec.addEventListener('click', function () { setQty(name, -1); });
+
+        cardUpdaters[name] = function (qty) {
+          if (qty > 0) { btn.style.display = 'none'; stepper.style.display = 'flex'; qtySpan.textContent = qty; }
+          else { btn.style.display = 'block'; stepper.style.display = 'none'; }
+        };
+        dynamicNames.push(name);
+
+        body.appendChild(noteEl);
+        body.appendChild(btn);
+        body.appendChild(stepper);
         return card;
       }
 
-      function renderProducts(list) {
-        // remove previously rendered dynamic cards + their cart hooks
-        dynamicNames.forEach(function (n) { delete cardUpdaters[n]; });
-        dynamicNames = [];
-        document.querySelectorAll('.card[data-dynamic="1"]').forEach(function (c) { c.remove(); });
+      // List style (drinks, sauces, custom compact categories) — name + price + add.
+      function buildProductListRow(product) {
+        var row = document.createElement('div');
+        row.className = 'drink-row';
+        row.setAttribute('data-dynamic', '1');
 
-        var cats = window.PRODUCT_CATEGORIES || [];
-        cats.forEach(function (cat) {
-          var grid = document.getElementById('grid-' + cat.key);
-          if (!grid) return;
-          var items = list.filter(function (p) { return (p.category || '') === cat.key; })
-            .sort(function (a, b) { return (a.sortOrder || 0) - (b.sortOrder || 0); });
-          var anchor = grid.querySelector('[data-static="1"]');
-          items.forEach(function (p) {
-            var card = buildProductCard(p);
-            if (anchor) grid.insertBefore(card, anchor);
-            else grid.appendChild(card);
-          });
-        });
-        refresh();
-      }
+        var nameEl = document.createElement('span');
+        nameEl.className = 'drink-name';
+        nameEl.textContent = product.name || '';
+        row.appendChild(nameEl);
 
-      function loadProducts() {
-        var fallback = (window.MENU_PRODUCTS_DEFAULT || []).slice();
-        renderProducts(fallback); // instant paint + offline fallback
-        if (!db) return;
-        db.collection(window.PRODUCTS_COLLECTION || 'products').get()
-          .then(function (snap) {
-            var list = [];
-            snap.forEach(function (doc) { var d = doc.data(); d.id = doc.id; list.push(d); });
-            if (list.length) renderProducts(list); // replace fallback with live data
-          })
-          .catch(function () { /* keep fallback */ });
-      }
+        var holder = document.createElement('span');
+        holder.className = 'row-flex';
+        var priceEl = document.createElement('span');
+        priceEl.className = 'drink-price';
+        priceEl.textContent = (Number(product.price) || 0) + ' QAR';
+        holder.appendChild(priceEl);
 
-      /* inject mini add button + inline stepper for option rows (Fries / Drinks) */
-      document.querySelectorAll('.opt-row').forEach(function (row) {
-        var name = row.getAttribute('data-name');
-        var price = parsePrice(row.getAttribute('data-price'));
-        var holder = row.querySelector('.row-flex');
-        if (!holder) return;
+        var name = (product.name || '').trim();
+
+        if (product.available === false) {
+          var so = document.createElement('span');
+          so.className = 'drink-price';
+          so.style.marginLeft = '10px';
+          so.style.opacity = '0.7';
+          so.textContent = '· Sold Out · نفذت';
+          holder.appendChild(so);
+          row.appendChild(holder);
+          row.classList.add('soldout');
+          return row;
+        }
+
+        var price = Number(product.price) || 0;
 
         var add = document.createElement('button');
         add.className = 'mini-add';
@@ -1320,127 +1230,64 @@
         d.addEventListener('click', function () { setQty(name, -1); });
 
         cardUpdaters[name] = function (qty) {
-          if (qty > 0) {
-            add.style.display = 'none';
-            step.style.display = 'flex';
-            q.textContent = qty;
-          } else {
-            add.style.display = 'inline-flex';
-            step.style.display = 'none';
-          }
+          if (qty > 0) { add.style.display = 'none'; step.style.display = 'flex'; q.textContent = qty; }
+          else { add.style.display = 'inline-flex'; step.style.display = 'none'; }
         };
+        dynamicNames.push(name);
 
         holder.appendChild(add);
         holder.appendChild(step);
-      });
+        row.appendChild(holder);
+        return row;
+      }
 
-      /* ── option chooser (Sodas / Sauces): each flavor is a distinct cart line ── */
-      var OPTION_GROUPS = {
-        sodas: {
-          title: 'Sodas · مشروبات غازية',
-          items: [
-            { name: 'Cola', price: 5 },
-            { name: 'Cola Zero', price: 5 },
-            { name: 'Seven Up', price: 5 },
-            { name: 'Seven Up Diet', price: 5 },
-            { name: 'Kinza Cola', price: 5 },
-            { name: 'Kinza Cola Diet', price: 5 },
-            { name: 'Kinza Citrus', price: 5 }
-          ]
-        },
-        sauces: {
-          title: 'Sauces · الصوصات',
-          items: [
-            { name: 'Hot Honey', price: 5 },
-            { name: 'Truffle Sauce', price: 5 },
-            { name: 'Ranch Sauce', price: 5 },
-            { name: 'Special Sauce', price: 5 },
-            { name: 'Ketchup', price: 2 }
-          ]
-        }
-      };
+      function renderProducts(list) {
+        // remove previously rendered cart hooks, then rebuild every section
+        dynamicNames.forEach(function (n) { delete cardUpdaters[n]; });
+        dynamicNames = [];
+        sectionsRoot.innerHTML = '';
 
-      var chooserOverlay = document.getElementById('chooserOverlay');
-      var chooserTitle = document.getElementById('chooserTitle');
-      var chooserList = document.getElementById('chooserList');
-      var chooserClose = document.getElementById('chooserClose');
-      var chooserDone = document.getElementById('chooserDone');
+        orderedCategories(list).forEach(function (cat) {
+          var items = list.filter(function (p) { return (p.category || 'other') === cat.key; })
+            .sort(function (a, b) { return (a.sortOrder || 0) - (b.sortOrder || 0); });
+          if (!items.length) return;
 
-      function openChooser(groupKey) {
-        var group = OPTION_GROUPS[groupKey];
-        if (!group) return;
-        chooserTitle.textContent = group.title;
-        chooserList.innerHTML = '';
+          var section = document.createElement('section');
+          var title = document.createElement('h2');
+          title.className = 'section-title';
+          title.textContent = cat.title;
+          section.appendChild(title);
 
-        group.items.forEach(function (opt) {
-          var row = document.createElement('div');
-          row.className = 'chooser-item';
-
-          var info = document.createElement('div');
-          info.className = 'chooser-item-info';
-          var nm = document.createElement('div'); nm.className = 'chooser-item-name'; nm.textContent = opt.name;
-          var pr = document.createElement('div'); pr.className = 'chooser-item-price'; pr.textContent = opt.price + ' QAR';
-          info.appendChild(nm); info.appendChild(pr);
-
-          var ctrl = document.createElement('div');
-          ctrl.className = 'chooser-ctrl';
-
-          var add = document.createElement('button');
-          add.className = 'mini-add';
-          add.textContent = '+';
-          add.setAttribute('aria-label', 'Add ' + opt.name);
-
-          var step = document.createElement('span');
-          step.className = 'qty';
-          step.style.display = 'none';
-          step.style.marginLeft = '10px';
-          var d = document.createElement('button'); d.innerHTML = '&minus;';
-          var q = document.createElement('span'); q.textContent = '0';
-          var i = document.createElement('button'); i.textContent = '+';
-          step.appendChild(d); step.appendChild(q); step.appendChild(i);
-
-          add.addEventListener('click', function () { addItem(opt.name, opt.price); });
-          i.addEventListener('click', function () { setQty(opt.name, 1); });
-          d.addEventListener('click', function () { setQty(opt.name, -1); });
-
-          ctrl.appendChild(add); ctrl.appendChild(step);
-          row.appendChild(info); row.appendChild(ctrl);
-          chooserList.appendChild(row);
-
-          cardUpdaters[opt.name] = function (qty) {
-            if (qty > 0) {
-              add.style.display = 'none';
-              step.style.display = 'flex';
-              q.textContent = qty;
-            } else {
-              add.style.display = 'inline-flex';
-              step.style.display = 'none';
-            }
-          };
-          cardUpdaters[opt.name](cart[opt.name] ? cart[opt.name].qty : 0);
+          if (cat.display === 'list') {
+            var listGrid = document.createElement('div');
+            listGrid.className = 'drinks-grid';
+            items.forEach(function (p) { listGrid.appendChild(buildProductListRow(p)); });
+            section.appendChild(listGrid);
+          } else {
+            var grid = document.createElement('div');
+            grid.className = 'grid';
+            items.forEach(function (p) { grid.appendChild(buildProductCard(p)); });
+            section.appendChild(grid);
+          }
+          sectionsRoot.appendChild(section);
         });
-
-        chooserOverlay.classList.add('open');
-        document.body.style.overflow = 'hidden';
+        refresh();
       }
 
-      function closeChooser() {
-        chooserOverlay.classList.remove('open');
-        document.body.style.overflow = '';
+      function loadProducts() {
+        var fallback = (window.MENU_PRODUCTS_DEFAULT || []).slice();
+        renderProducts(fallback); // instant paint + offline fallback
+        if (!db) return;
+        db.collection(window.PRODUCTS_COLLECTION || 'products').get()
+          .then(function (snap) {
+            var list = [];
+            snap.forEach(function (doc) { var d = doc.data(); d.id = doc.id; list.push(d); });
+            if (list.length) renderProducts(list); // replace fallback with live data
+          })
+          .catch(function () { /* keep fallback */ });
       }
-      chooserClose.addEventListener('click', closeChooser);
-      chooserDone.addEventListener('click', closeChooser);
-      chooserOverlay.addEventListener('click', function (e) {
-        if (e.target === chooserOverlay) closeChooser();
-      });
 
-      document.querySelectorAll('.chooser-row').forEach(function (row) {
-        var key = row.getAttribute('data-chooser');
-        var btn = row.querySelector('.choose-btn');
-        if (btn) btn.addEventListener('click', function () { openChooser(key); });
-      });
-
-      /* render product cards (from Firestore, falling back to defaults) */
+      /* render menu (from Firestore, falling back to defaults) */
       loadProducts();
     })();
   </script>

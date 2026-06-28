@@ -221,6 +221,7 @@
       padding: 3px 0;
     }
     .order-item .q { font-weight: 600; }
+    .order-item-note { display: block; font-size: 12px; font-style: italic; color: var(--green-muted); margin-top: 2px; }
     .order-total {
       display: flex;
       justify-content: space-between;
@@ -479,6 +480,15 @@
             <select id="pfCategory"></select>
           </div>
         </div>
+        <div class="pfield hidden" id="newCatWrap">
+          <label for="pfNewCatTitle">New category name · اسم التصنيف الجديد</label>
+          <input type="text" id="pfNewCatTitle" placeholder="e.g. Desserts · الحلويات" />
+          <label for="pfNewCatDisplay" style="margin-top:8px;">Display style · طريقة العرض</label>
+          <select id="pfNewCatDisplay">
+            <option value="card">With photos (cards) · بطاقات بصور</option>
+            <option value="list">Compact list · قائمة مبسطة</option>
+          </select>
+        </div>
         <div class="pfield">
           <label for="pfDesc">Description · الوصف</label>
           <textarea id="pfDesc" placeholder="Fresh mozzarella · tomato sauce"></textarea>
@@ -675,7 +685,8 @@
         var html = '';
         list.forEach(function (o) {
           var itemsHtml = (o.items || []).map(function (it) {
-            return '<div class="order-item"><span><span class="q">' + esc(it.qty) + '×</span> ' + esc(it.name) + '</span>' +
+            return '<div class="order-item"><span><span class="q">' + esc(it.qty) + '×</span> ' + esc(it.name) +
+              (it.note ? '<span class="order-item-note">📝 ' + esc(it.note) + '</span>' : '') + '</span>' +
               '<span>' + esc((it.price || 0) * (it.qty || 0)) + ' QAR</span></div>';
           }).join('');
 
@@ -813,6 +824,9 @@
       var pfName = document.getElementById('pfName');
       var pfPrice = document.getElementById('pfPrice');
       var pfCategory = document.getElementById('pfCategory');
+      var newCatWrap = document.getElementById('newCatWrap');
+      var pfNewCatTitle = document.getElementById('pfNewCatTitle');
+      var pfNewCatDisplay = document.getElementById('pfNewCatDisplay');
       var pfDesc = document.getElementById('pfDesc');
       var pfImageFile = document.getElementById('pfImageFile');
       var pfImageUrl = document.getElementById('pfImageUrl');
@@ -826,17 +840,63 @@
       var unsubProducts = null;
       var pickedFile = null;
 
-      CATS.forEach(function (c) {
-        var opt = document.createElement('option');
-        opt.value = c.key;
-        opt.textContent = c.title;
-        pfCategory.appendChild(opt);
-      });
-
-      function catTitle(key) {
-        for (var i = 0; i < CATS.length; i++) { if (CATS[i].key === key) return CATS[i].title; }
-        return key || 'Other · أخرى';
+      function knownCat(key) {
+        for (var i = 0; i < CATS.length; i++) { if (CATS[i].key === key) return CATS[i]; }
+        return null;
       }
+      // Resolve a category's display title + style: known categories first,
+      // then any custom-category metadata stored on existing products.
+      function categoryMeta(key) {
+        var k = knownCat(key);
+        if (k) return { key: key, title: k.title, display: k.display || 'card' };
+        for (var i = 0; i < products.length; i++) {
+          if ((products[i].category || '') === key && products[i].categoryTitle) {
+            return { key: key, title: products[i].categoryTitle, display: products[i].categoryDisplay || 'card' };
+          }
+        }
+        return { key: key, title: key || 'Other · أخرى', display: 'card' };
+      }
+      function catTitle(key) { return categoryMeta(key).title; }
+
+      // Known categories first (defined order), then custom ones found on products.
+      function allCategories() {
+        var out = [], seen = {};
+        CATS.forEach(function (c) { out.push({ key: c.key, title: c.title, display: c.display || 'card' }); seen[c.key] = true; });
+        products.forEach(function (p) {
+          var key = p.category || '';
+          if (!key || seen[key]) return;
+          seen[key] = true;
+          out.push(categoryMeta(key));
+        });
+        return out;
+      }
+
+      function slugify(s) {
+        var slug = (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        return slug || ('cat-' + Date.now());
+      }
+
+      function populateCategorySelect(selected) {
+        pfCategory.innerHTML = '';
+        allCategories().forEach(function (c) {
+          var opt = document.createElement('option');
+          opt.value = c.key;
+          opt.textContent = c.title;
+          pfCategory.appendChild(opt);
+        });
+        var nu = document.createElement('option');
+        nu.value = '__new__';
+        nu.textContent = '➕ New category · تصنيف جديد';
+        pfCategory.appendChild(nu);
+        if (selected != null) pfCategory.value = selected;
+        toggleNewCat();
+      }
+
+      function toggleNewCat() {
+        if (pfCategory.value === '__new__') newCatWrap.classList.remove('hidden');
+        else newCatWrap.classList.add('hidden');
+      }
+      pfCategory.addEventListener('change', toggleNewCat);
 
       function productRow(p) {
         var soldout = p.available === false;
@@ -862,7 +922,7 @@
         }
         var html = '';
         var shown = {};
-        CATS.forEach(function (cat) {
+        allCategories().forEach(function (cat) {
           var items = products.filter(function (p) { return (p.category || '') === cat.key; })
             .sort(function (a, b) { return (a.sortOrder || 0) - (b.sortOrder || 0); });
           if (!items.length) return;
@@ -881,12 +941,14 @@
         pickedFile = null;
         pformErr.textContent = '';
         pfImageFile.value = '';
+        pfNewCatTitle.value = '';
+        pfNewCatDisplay.value = 'card';
         if (product) {
           pformTitle.textContent = 'Edit product · تعديل منتج';
           pfId.value = product.id;
           pfName.value = product.name || '';
           pfPrice.value = (product.price != null ? product.price : '');
-          pfCategory.value = product.category || (CATS[0] && CATS[0].key) || '';
+          populateCategorySelect(product.category || (CATS[0] && CATS[0].key) || '');
           pfDesc.value = product.desc || '';
           pfImageUrl.value = product.imageUrl || '';
           pfAvailable.checked = product.available !== false;
@@ -897,7 +959,7 @@
           pfId.value = '';
           pfName.value = '';
           pfPrice.value = '';
-          pfCategory.value = (CATS[0] && CATS[0].key) || '';
+          populateCategorySelect((CATS[0] && CATS[0].key) || '');
           pfDesc.value = '';
           pfImageUrl.value = '';
           pfAvailable.checked = true;
@@ -909,7 +971,11 @@
       }
       function closeForm() { productForm.classList.add('hidden'); pickedFile = null; pfImageFile.value = ''; }
 
-      addProductBtn.addEventListener('click', function () { openForm(null); });
+      // Add button toggles: open a blank form, or close it if already adding.
+      addProductBtn.addEventListener('click', function () {
+        if (!productForm.classList.contains('hidden') && !pfId.value) closeForm();
+        else openForm(null);
+      });
       pfCancel.addEventListener('click', closeForm);
 
       pfImageFile.addEventListener('change', function () {
@@ -937,9 +1003,21 @@
         pformErr.textContent = '';
         var name = pfName.value.trim();
         var price = parseFloat(pfPrice.value);
-        var category = pfCategory.value;
         if (!name) { pformErr.textContent = 'Please enter a name · الرجاء إدخال الاسم'; return; }
         if (isNaN(price) || price < 0) { pformErr.textContent = 'Please enter a valid price · الرجاء إدخال سعر صحيح'; return; }
+
+        var category, categoryTitle, categoryDisplay;
+        if (pfCategory.value === '__new__') {
+          categoryTitle = pfNewCatTitle.value.trim();
+          if (!categoryTitle) { pformErr.textContent = 'Please enter the new category name · الرجاء إدخال اسم التصنيف الجديد'; return; }
+          category = slugify(categoryTitle);
+          categoryDisplay = pfNewCatDisplay.value === 'list' ? 'list' : 'card';
+        } else {
+          category = pfCategory.value;
+          var meta = categoryMeta(category);
+          categoryTitle = meta.title;
+          categoryDisplay = meta.display;
+        }
 
         pfSave.disabled = true;
         var origLabel = pfSave.textContent;
@@ -953,6 +1031,8 @@
             name: name,
             price: price,
             category: category,
+            categoryTitle: categoryTitle,
+            categoryDisplay: categoryDisplay,
             desc: pfDesc.value.trim(),
             imageUrl: imageUrl || '',
             available: pfAvailable.checked,
@@ -1027,8 +1107,12 @@
         var batch = db.batch();
         defaults.forEach(function (p) {
           var ref = db.collection(PCOLL).doc();
+          var seedMeta = categoryMeta(p.category);
           batch.set(ref, {
-            name: p.name, price: p.price, category: p.category, desc: p.desc || '',
+            name: p.name, price: p.price, category: p.category,
+            categoryTitle: p.categoryTitle || seedMeta.title,
+            categoryDisplay: p.categoryDisplay || seedMeta.display,
+            desc: p.desc || '',
             imageUrl: p.imageUrl || '', available: p.available !== false, sortOrder: p.sortOrder || 0,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
